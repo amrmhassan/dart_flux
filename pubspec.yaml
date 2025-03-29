@@ -1,5 +1,9 @@
 name: dart_flux
-description: "A new Flutter package project."
+description: >
+  A lightweight and scalable Dart backend framework with built-in 
+  routing, middleware, authentication, and file management. 
+  Designed for flexibility, speed, and easy API development 
+  without external dependencies.
 version: 0.0.1
 homepage: https://github.com/amrmhassan/dart_flux.git
 
