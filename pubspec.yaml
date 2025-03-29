@@ -1,7 +1,7 @@
 name: dart_flux
 description: "A new Flutter package project."
 version: 0.0.1
-homepage:
+homepage: https://github.com/amrmhassan/dart_flux.git
 
 environment:
   sdk: ^3.7.2
