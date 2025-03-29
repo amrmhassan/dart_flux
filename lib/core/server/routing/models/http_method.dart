@@ -14,6 +14,9 @@ class HttpMethod {
   /// This will just use the request method
   /// meaning that the `RoutingEntity` will run on each http method
   static const _HttpMethodModel all = _All();
+
+  /// this is just useless
+  static const _HttpMethodModel unknown = _UnknownMethod();
 }
 
 class _HttpMethodModel {

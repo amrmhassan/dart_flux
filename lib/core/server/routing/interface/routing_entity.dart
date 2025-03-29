@@ -16,12 +16,7 @@ class RoutingEntity {
   /// this is the function that will be executed when hitting this routing entity
   final Processor processor;
 
-  RoutingEntity(
-    this.pathTemplate,
-    this.method,
-    this.processor, {
-    required String? signature,
-  });
+  RoutingEntity(this.pathTemplate, this.method, this.processor);
 
   bool checkMine(String path, HttpMethod method) {
     return PathChecker(
