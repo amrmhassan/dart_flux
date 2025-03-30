@@ -7,6 +7,10 @@ class FluxResponse extends HttpEntity {
 
   FluxResponse(this._request);
   HttpResponse get _response => _request.response;
+  Future<FluxResponse> close() async {
+    await _response.close();
+    return this;
+  }
 
   FluxResponse write(Object? object, {int? code}) {
     if (code != null) {

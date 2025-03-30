@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
+import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/handler.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
-import 'package:dart_flux/core/server/routing/models/processor.dart';
 
 class Router implements RequestProcessor {
   // only middlewares
@@ -47,7 +47,7 @@ class Router implements RequestProcessor {
   }
 
   @override
-  List<Processor> processors(String path, HttpMethod method) {
+  List<RoutingEntity> processors(String path, HttpMethod method) {
     // main pipeline
     var main = _extractFromPipeline(_mainPipeline, path, method);
     if (main.isEmpty) return [];
@@ -61,12 +61,12 @@ class Router implements RequestProcessor {
     return [...upper, ...main, ...lower];
   }
 
-  List<Processor> _extractFromPipeline(
+  List<RoutingEntity> _extractFromPipeline(
     List<RequestProcessor> pipeLine,
     String path,
     HttpMethod method,
   ) {
-    List<Processor> mainProcessors = [];
+    List<RoutingEntity> mainProcessors = [];
     for (var requestProcessor in pipeLine) {
       // if handler then it should be the last of the pipeline
       var entityProcessors = requestProcessor.processors(path, method);

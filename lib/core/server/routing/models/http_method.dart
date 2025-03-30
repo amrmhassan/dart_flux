@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:dart_flux/core/errors/server_error.dart';
+
 enum HttpMethod {
   get,
   post,
@@ -11,6 +13,17 @@ enum HttpMethod {
   trace,
   patch,
   all,
+}
+
+HttpMethod methodFromString(String httpMethod) {
+  var values = HttpMethod.values;
+  int index = values.indexWhere(
+    (e) => e.name.toLowerCase() == httpMethod.toLowerCase(),
+  );
+  if (index == -1) {
+    throw ServerError('method $httpMethod not found');
+  }
+  return values[index];
 }
 
 // class HttpMethod {

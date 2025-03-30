@@ -9,37 +9,33 @@ class Handler extends RoutingEntity implements RequestProcessor {
   List<Middleware> _middlewares = [];
   List<Middleware> _lowerMiddleware = [];
 
-  Handler addMiddleware(Middleware middleware) {
-    _middlewares.add(middleware);
+  Handler middleware(Processor processor) {
+    _middlewares.add(Middleware(pathTemplate, method, processor));
     return this;
   }
 
-  Handler addLowerMiddleware(Middleware middleware) {
+  Handler lowerMiddleware(Middleware middleware) {
     _lowerMiddleware.add(middleware);
     return this;
   }
 
   @override
-  List<Processor> processors(String path, HttpMethod method) {
+  List<RoutingEntity> processors(String path, HttpMethod method) {
     var middlewaresProcessors =
         _middlewares
             .where((middleware) => middleware.checkMine(path, method))
-            .map((middleware) => middleware.processor)
+            .map((middleware) => middleware)
             .toList();
 
     var lowerMiddlewaresProcessors =
         _lowerMiddleware
             .where((middleware) => middleware.checkMine(path, method))
-            .map((middleware) => middleware.processor)
+            .map((middleware) => middleware)
             .toList();
 
     bool mine = checkMine(path, method);
     if (mine) {
-      return [
-        ...middlewaresProcessors,
-        processor,
-        ...lowerMiddlewaresProcessors,
-      ];
+      return [...middlewaresProcessors, this, ...lowerMiddlewaresProcessors];
     }
     return [];
   }

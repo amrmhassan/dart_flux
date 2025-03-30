@@ -2,11 +2,13 @@
 import 'dart:io';
 
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
+import 'package:dart_flux/core/server/routing/models/context.dart';
+import 'package:dart_flux/core/server/routing/models/flux_response.dart';
 
 class FluxRequest extends HttpEntity {
   final HttpRequest _request;
   FluxRequest(this._request);
-  Map<String, dynamic> context = {};
+  Context context = Context();
 
   HttpHeaders get headers => _request.headers;
   Uri get uri => _request.uri;
@@ -22,5 +24,5 @@ class FluxRequest extends HttpEntity {
     return hashCode == other.hashCode;
   }
 
-  HttpResponse get response => _request.response;
+  FluxResponse get response => FluxResponse(_request);
 }

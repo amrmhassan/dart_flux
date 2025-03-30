@@ -42,8 +42,4 @@ class PathChecker {
     );
     return pathMatches;
   }
-
-  /// Extracts path parameters (e.g., `/user/:id` → `/user/123` returns `{id: 123}`)
-  Map<String, String> extractParams(String requestPath, String handlerPath) =>
-      PathUtils.extractParams(requestPath, handlerPath);
 }

@@ -28,8 +28,9 @@ class PathUtils {
   /// Extracts path parameters (e.g., `/user/:id` → `/user/123` returns `{id: 123}`)
   static Map<String, String> extractParams(
     String requestPath,
-    String handlerPath,
+    String? handlerPath,
   ) {
+    if (handlerPath == null) return {};
     List<String> requestSegments = requestPath.split('/');
     List<String> handlerSegments = handlerPath.split('/');
     Map<String, String> params = {};
