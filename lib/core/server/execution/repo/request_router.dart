@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dart_flux/constants/date_constants.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/execution/models/flux_request_info.dart';
+import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
@@ -59,12 +60,18 @@ class RequestRouter {
     }
     FluxRequest request = initRequest;
     FluxResponse response = request.response;
+    late HttpEntity output;
     for (var entity in entities) {
       Map<String, String> uriDynamicParams = PathUtils.extractParams(
         initRequest.path,
         entity.pathTemplate,
       );
-      var output = await entity.processor(request, response, uriDynamicParams);
+      try {
+        output = await entity.processor(request, response, uriDynamicParams);
+      } catch (e) {
+        output = response;
+        await response.write('Error: $e').close();
+      }
       if (output is FluxRequest) {
         request = output;
       } else if (output is FluxResponse) {
