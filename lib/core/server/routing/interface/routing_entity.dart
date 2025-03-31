@@ -1,5 +1,4 @@
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
-import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/routing/utils/path_checker.dart';
 
 /// the entity responsible for making a change to the request
@@ -11,18 +10,20 @@ class RoutingEntity {
   final String? pathTemplate;
 
   /// this is the method of the handler or middleware not the incoming request method
-  final HttpMethod method;
+  /// if null this means every request will trigger this entity(middleware)
+  final HttpMethod? method;
 
   /// this is the function that will be executed when hitting this routing entity
-  final Processor processor;
+  final dynamic processor;
 
   RoutingEntity(this.pathTemplate, this.method, this.processor);
 
-  bool checkMine(String path, HttpMethod method) {
+  bool checkMine(String path, HttpMethod method, String? basePathTemplate) {
     return PathChecker(
       requestPath: path,
       requestMethod: method,
       entity: this,
+      basePathTemplate: basePathTemplate,
     ).matches;
   }
 }

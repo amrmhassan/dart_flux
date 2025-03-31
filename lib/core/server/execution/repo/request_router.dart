@@ -68,6 +68,9 @@ class RequestRouter {
       if (output is FluxRequest) {
         request = output;
       } else if (output is FluxResponse) {
+        if (!output.closed) {
+          await output.close();
+        }
         return output;
       }
     }
@@ -81,9 +84,9 @@ class RequestRouter {
     FluxRequest request = FluxRequest(_request);
     FluxRequestInfo info = FluxRequestInfo();
     info.hitAt = now;
-    var entities = _requestProcessor.processors(path, method);
+    var entities = _requestProcessor.processors(path, method, null);
     entities = [..._upperMiddlewares, ...entities, ..._lowerMiddlewares];
-    var response = await _getResponse(entities, request);
+    await _getResponse(entities, request);
     info.leftAt = now;
   }
 }

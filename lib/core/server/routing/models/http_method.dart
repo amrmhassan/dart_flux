@@ -2,18 +2,7 @@
 
 import 'package:dart_flux/core/errors/server_error.dart';
 
-enum HttpMethod {
-  get,
-  post,
-  put,
-  delete,
-  head,
-  connect,
-  options,
-  trace,
-  patch,
-  all,
-}
+enum HttpMethod { get, post, put, delete, head, connect, options, trace, patch }
 
 HttpMethod methodFromString(String httpMethod) {
   var values = HttpMethod.values;

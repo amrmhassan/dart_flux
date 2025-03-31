@@ -3,5 +3,9 @@ import 'package:dart_flux/core/server/routing/models/http_method.dart';
 
 /// is the request processor like Handler, Middleware or Router
 abstract class RequestProcessor {
-  List<RoutingEntity> processors(String path, HttpMethod method);
+  List<RoutingEntity> processors(
+    String path,
+    HttpMethod method,
+    String? basePathTemplate,
+  );
 }

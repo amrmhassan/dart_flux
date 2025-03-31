@@ -4,11 +4,14 @@ import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 
 class FluxResponse extends HttpEntity {
   final HttpRequest _request;
+  bool _closed = false;
+  bool get closed => _closed;
 
   FluxResponse(this._request);
   HttpResponse get _response => _request.response;
   Future<FluxResponse> close() async {
     await _response.close();
+    _closed = true;
     return this;
   }
 

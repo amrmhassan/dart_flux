@@ -16,3 +16,14 @@ typedef Processor =
       /// {'user_id':159876663} this will be the pathArgs map
       Map<String, dynamic> pathArgs,
     );
+typedef ProcessorHandler =
+    FutureOr<FluxResponse> Function(
+      FluxRequest request,
+      FluxResponse response,
+
+      /// this is the arguments passed to the path itself like
+      /// /users/:user_id/getInfo => path template
+      /// /users/159876663/getInfo => actual request path
+      /// {'user_id':159876663} this will be the pathArgs map
+      Map<String, dynamic> pathArgs,
+    );

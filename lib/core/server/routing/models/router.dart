@@ -6,6 +6,8 @@ import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 
 class Router implements RequestProcessor {
+  /// this is a path template for the whole router and will apply for each sub request processor
+  String? _basePathTemplate;
   // only middlewares
   List<Middleware> _upperPipeline = [];
   // can be middlewares or handlers or routers
@@ -20,6 +22,10 @@ class Router implements RequestProcessor {
   }) : _upperPipeline = upperPipeline ?? [],
        _mainPipeline = mainPipeline ?? [],
        _lowerPipeline = lowerPipeline ?? [];
+
+  factory Router.path(String path) {
+    return Router().._basePathTemplate = path;
+  }
 
   Router router(Router handler) {
     _mainPipeline.add(handler);
@@ -47,16 +53,43 @@ class Router implements RequestProcessor {
   }
 
   @override
-  List<RoutingEntity> processors(String path, HttpMethod method) {
+  List<RoutingEntity> processors(
+    String path,
+    HttpMethod method,
+    String? basePathTemplate,
+  ) {
+    // basePathTemplate is the passed one from the request processor parent (mostly a router)
+    // _basePathTemplate is the current router base path template and comes next after the basePathTemplate
+    // so the passed down base path template should be the sum of the upper routers base path templates
+
+    String? finalBasePathTemplate =
+        basePathTemplate == null && _basePathTemplate == null
+            ? null
+            : (basePathTemplate ?? '') + (_basePathTemplate ?? '');
     // main pipeline
-    var main = _extractFromPipeline(_mainPipeline, path, method);
+    var main = _extractFromPipeline(
+      _mainPipeline,
+      path,
+      method,
+      finalBasePathTemplate,
+    );
     if (main.isEmpty) return [];
 
     // upper pipeline
-    var upper = _extractFromPipeline(_upperPipeline, path, method);
+    var upper = _extractFromPipeline(
+      _upperPipeline,
+      path,
+      method,
+      finalBasePathTemplate,
+    );
 
     // lower pipeline
-    var lower = _extractFromPipeline(_lowerPipeline, path, method);
+    var lower = _extractFromPipeline(
+      _lowerPipeline,
+      path,
+      method,
+      finalBasePathTemplate,
+    );
     // then add them together then return
     return [...upper, ...main, ...lower];
   }
@@ -65,11 +98,16 @@ class Router implements RequestProcessor {
     List<RequestProcessor> pipeLine,
     String path,
     HttpMethod method,
+    String? basePathTemplate,
   ) {
     List<RoutingEntity> mainProcessors = [];
     for (var requestProcessor in pipeLine) {
       // if handler then it should be the last of the pipeline
-      var entityProcessors = requestProcessor.processors(path, method);
+      var entityProcessors = requestProcessor.processors(
+        path,
+        method,
+        basePathTemplate,
+      );
       if (entityProcessors.isEmpty) continue;
       mainProcessors.addAll(entityProcessors);
       if (requestProcessor is Handler || requestProcessor is Router) {
