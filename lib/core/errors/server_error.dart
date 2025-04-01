@@ -1,3 +1,4 @@
+/// responsible for handling all errors thrown by flux framework and will be mapped into the response returned to the client
 class ServerError implements Exception {
   final String msg;
   final int code;

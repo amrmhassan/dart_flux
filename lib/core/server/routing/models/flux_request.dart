@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/models/context.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
+import 'package:dart_flux/core/server/routing/models/http_method.dart';
 
 class FluxRequest extends HttpEntity {
   final HttpRequest _request;
@@ -25,4 +26,5 @@ class FluxRequest extends HttpEntity {
   }
 
   FluxResponse get response => FluxResponse(_request);
+  HttpMethod get method => methodFromString(_request.method);
 }

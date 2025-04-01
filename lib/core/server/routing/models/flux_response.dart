@@ -28,4 +28,6 @@ class FluxResponse extends HttpEntity {
     _response.add(data);
     return this;
   }
+
+  int get code => _response.statusCode;
 }

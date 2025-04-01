@@ -8,6 +8,8 @@ import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/router.dart';
 
 void main(List<String> args) async {
+  print(DateTime.now());
+  print(DateTime.now().toUtc());
   var handler = Handler('/hello', HttpMethod.get, (
     request,
     response,
@@ -23,7 +25,6 @@ void main(List<String> args) async {
     return request;
   });
   var middleware = Middleware(null, null, (request, response, pathArgs) {
-    print('Hit middleware');
     return request;
   });
   var documentsHandler = Handler('/documents', HttpMethod.get, (
