@@ -9,6 +9,8 @@ environment:
   sdk: ^3.7.2
 
 dependencies:
+  mime: ^2.0.0
+  dart_id: ^2.0.2
   # path: ^1.8.0
 
 

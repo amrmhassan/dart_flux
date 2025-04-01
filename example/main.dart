@@ -10,7 +10,7 @@ void main(List<String> args) async {
         return SendResponse.data(response, 'list of users');
       })
       .post('', (request, response, pathArgs) {
-        return SendResponse.data(response, 'user added');
+        return SendResponse.json(response, {'msg': 'Hello'});
       })
       .delete('/:id', (request, response, pathArgs) {
         return SendResponse.data(
