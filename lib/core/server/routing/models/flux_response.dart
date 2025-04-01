@@ -21,11 +21,15 @@ class FluxResponse extends HttpEntity {
     return this;
   }
 
-  FluxResponse add(List<int> data) {
+  FluxResponse add(List<int> data, {int code = 500}) {
     _response.headers.contentLength = data.length;
+    _response.statusCode = code;
     _response.add(data);
     return this;
   }
 
   int get code => _response.statusCode;
+  HttpResponse get response => _request.response;
+  HttpHeaders get headers => response.headers;
+  set statusCode(int code) => response.statusCode;
 }

@@ -4,6 +4,8 @@ import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/handler.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
+import 'package:dart_flux/core/server/routing/models/processor.dart';
+import 'package:dart_flux/utils/path_utils.dart';
 
 class Router implements RequestProcessor {
   /// this is a path template for the whole router and will apply for each sub request processor
@@ -27,31 +29,6 @@ class Router implements RequestProcessor {
     return Router().._basePathTemplate = path;
   }
 
-  Router router(Router handler) {
-    _mainPipeline.add(handler);
-    return this;
-  }
-
-  Router handler(Handler handler) {
-    _mainPipeline.add(handler);
-    return this;
-  }
-
-  Router middleware(Middleware middleware) {
-    _mainPipeline.add(middleware);
-    return this;
-  }
-
-  Router upperMiddleware(Middleware middleware) {
-    _upperPipeline.add(middleware);
-    return this;
-  }
-
-  Router lowerMiddleware(Middleware middleware) {
-    _lowerPipeline.add(middleware);
-    return this;
-  }
-
   @override
   List<RoutingEntity> processors(
     String path,
@@ -62,10 +39,10 @@ class Router implements RequestProcessor {
     // _basePathTemplate is the current router base path template and comes next after the basePathTemplate
     // so the passed down base path template should be the sum of the upper routers base path templates
 
-    String? finalBasePathTemplate =
-        basePathTemplate == null && _basePathTemplate == null
-            ? null
-            : (basePathTemplate ?? '') + (_basePathTemplate ?? '');
+    String? finalBasePathTemplate = PathUtils.finalPath(
+      _basePathTemplate,
+      basePathTemplate,
+    );
     // main pipeline
     var main = _extractFromPipeline(
       _mainPipeline,
@@ -81,6 +58,7 @@ class Router implements RequestProcessor {
       path,
       method,
       finalBasePathTemplate,
+      handlerIsAMust: false,
     );
 
     // lower pipeline
@@ -89,6 +67,7 @@ class Router implements RequestProcessor {
       path,
       method,
       finalBasePathTemplate,
+      handlerIsAMust: false,
     );
     // then add them together then return
     return [...upper, ...main, ...lower];
@@ -98,8 +77,11 @@ class Router implements RequestProcessor {
     List<RequestProcessor> pipeLine,
     String path,
     HttpMethod method,
-    String? basePathTemplate,
-  ) {
+    String? basePathTemplate, {
+
+    /// this will ensure that the processors list must contain a handler at the end of the pipeline
+    bool handlerIsAMust = false,
+  }) {
     List<RoutingEntity> mainProcessors = [];
     for (var requestProcessor in pipeLine) {
       // if handler then it should be the last of the pipeline
@@ -114,6 +96,93 @@ class Router implements RequestProcessor {
         return mainProcessors;
       }
     }
-    return [];
+    return handlerIsAMust ? [] : mainProcessors;
+  }
+
+  //? adding request processors
+  Router router(Router handler) {
+    _mainPipeline.add(handler);
+    return this;
+  }
+
+  Router handler(Handler handler) {
+    _mainPipeline.add(handler);
+    return this;
+  }
+
+  Router rawMiddleware(Middleware middleware) {
+    _mainPipeline.add(middleware);
+    return this;
+  }
+
+  Router middleware(Processor processor) {
+    Middleware m = Middleware(null, null, processor);
+    return rawMiddleware(m);
+  }
+
+  /// upper middlewares will always be executed before any other middleware or handler on this router
+  Router upperMiddleware(Middleware middleware) {
+    _upperPipeline.add(middleware);
+    return this;
+  }
+
+  Router upper(Processor processor) {
+    return upperMiddleware(Middleware(null, null, processor));
+  }
+
+  /// upper middlewares will always be executed after any other middleware or handler on this router
+  Router lowerMiddleware(Middleware middleware) {
+    _lowerPipeline.add(middleware);
+    return this;
+  }
+
+  Router lower(Processor processor) {
+    return lowerMiddleware(Middleware(null, null, processor));
+  }
+
+  //? fast inserting handlers
+  Router _addFastMethod(
+    String path,
+    HttpMethod method,
+    ProcessorHandler processor,
+  ) {
+    Handler h = Handler(path, method, processor);
+    return handler(h);
+  }
+
+  Router get(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.get, processor);
+  }
+
+  Router post(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.post, processor);
+  }
+
+  Router put(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.put, processor);
+  }
+
+  Router delete(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.delete, processor);
+  }
+
+  Router head(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.head, processor);
+  }
+
+  Router connect(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.connect, processor);
+  }
+
+  Router options(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.options, processor);
+  }
+
+  Router trace(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.trace, processor);
+  }
+
+  Router patch(String path, ProcessorHandler processor) {
+    return _addFastMethod(path, HttpMethod.patch, processor);
   }
 }

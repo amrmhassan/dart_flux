@@ -26,7 +26,11 @@ class PathChecker {
   /// - Wildcards (`/user/*` matches `/user/any/number/of/paths`)
   bool get matches {
     // handler data
-    var handlerPath = _entity.pathTemplate;
+    var handlerPath = PathUtils.finalPath(
+      _basePathTemplate,
+      _entity.pathTemplate,
+    );
+    (_entity.pathTemplate ?? '');
     var handlerMethod =
         _entity.method == null ? _requestMethod : _entity.method;
 
@@ -39,9 +43,7 @@ class PathChecker {
 
     // if the handler path template is null this means that it will work on every request
     if (handlerPath == null) return true;
-    if (_basePathTemplate != null) {
-      handlerPath = _basePathTemplate + handlerPath;
-    }
+
     bool pathMatches = PathUtils.pathMatches(
       requestPath: requestPath,
       handlerPath: handlerPath,

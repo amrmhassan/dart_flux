@@ -27,4 +27,5 @@ class FluxRequest extends HttpEntity {
 
   FluxResponse get response => FluxResponse(_request);
   HttpMethod get method => methodFromString(_request.method);
+  HttpRequest get request => _request;
 }

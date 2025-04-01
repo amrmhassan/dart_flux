@@ -62,7 +62,7 @@ class RequestRouter {
       // here i should return the not found handler
       var res = FluxRequest(_request).response;
       await res.write('no path found', code: HttpStatus.notFound).close();
-      return res;
+      return SendResponse.notFound(res, 'request path not found');
     }
     FluxRequest request = initRequest;
     FluxResponse response = request.response;

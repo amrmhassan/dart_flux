@@ -44,4 +44,10 @@ class PathUtils {
 
     return params;
   }
+
+  static String? finalPath(String? basePath, String? entityPath) {
+    return entityPath == null && basePath == null
+        ? null
+        : (basePath ?? '') + (entityPath ?? '');
+  }
 }
