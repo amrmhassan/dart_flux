@@ -1,5 +1,5 @@
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
-import 'package:dart_flux/core/server/routing/utils/path_checker.dart';
+import 'package:dart_flux/core/server/utils/path_checker.dart';
 
 /// the entity responsible for making a change to the request
 /// like a handler or a middleware

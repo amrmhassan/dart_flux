@@ -15,10 +15,8 @@ class FluxResponse extends HttpEntity {
     return this;
   }
 
-  FluxResponse write(Object? object, {int? code}) {
-    if (code != null) {
-      _response.statusCode = code;
-    }
+  FluxResponse write(Object? object, {int code = 500}) {
+    _response.statusCode = code;
     _response.write(object);
     return this;
   }

@@ -10,6 +10,7 @@ import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
+import 'package:dart_flux/core/server/utils/send_response.dart';
 import 'package:dart_flux/utils/path_utils.dart';
 
 class RequestRouter {
@@ -74,8 +75,7 @@ class RequestRouter {
       try {
         output = await entity.processor(request, response, uriDynamicParams);
       } catch (e) {
-        output = response;
-        await response.write('Error: $e').close();
+        output = await SendResponse.error(response, e);
       }
       if (output is FluxRequest) {
         request = output;

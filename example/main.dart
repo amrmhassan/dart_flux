@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_flux/constants/date_constants.dart';
+import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/execution/repo/server.dart';
 import 'package:dart_flux/core/server/routing/models/handler.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
@@ -32,7 +33,10 @@ void main(List<String> args) async {
     response,
     pathArgs,
   ) async {
-    await response.write('User documents').close();
+    throw ServerError(
+      'cant be done',
+      HttpStatus.connectionClosedWithoutResponse,
+    );
     return response;
   });
   var subRouter = Router().handler(documentsHandler);
