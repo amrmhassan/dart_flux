@@ -1,11 +1,10 @@
 import 'dart:io';
 
 import 'package:dart_flux/core/errors/server_error.dart';
-import 'package:dart_flux/core/server/execution/interface/request_logger.dart';
 import 'package:dart_flux/core/server/execution/interface/server_interface.dart';
-import 'package:dart_flux/core/server/execution/repo/flux_request_logger.dart';
 import 'package:dart_flux/core/server/execution/repo/request_router.dart';
 import 'package:dart_flux/core/server/execution/utils/server_utils.dart';
+import 'package:dart_flux/core/server/middlewares/request_logger_middleware.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 
@@ -30,10 +29,10 @@ class Server implements ServerInterface {
     this.requestProcessor, {
     List<Middleware> upperMiddlewares = const [],
     List<Middleware> lowerMiddlewares = const [],
-    this.logger,
   }) : lowerMiddlewares = lowerMiddlewares,
        upperMiddlewares = upperMiddlewares {
-    this.logger ??= FluxRequestLogger();
+    upperMiddlewares.insert(0, RequestLoggerMiddleware.upper);
+    lowerMiddlewares.add(RequestLoggerMiddleware.lower);
   }
 
   HttpServer? _server;
@@ -59,11 +58,7 @@ class Server implements ServerInterface {
         requestProcessor,
         upperMiddlewares,
         lowerMiddlewares,
-        logger,
       ),
     );
   }
-
-  @override
-  RequestLogger? logger;
 }

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dart_flux/core/server/execution/interface/request_logger.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 
@@ -19,6 +18,5 @@ abstract class ServerInterface {
   /// middleware that runs after the requestProcessor
   late final List<Middleware> lowerMiddlewares;
   HttpServer get server;
-  late RequestLogger? logger;
   Future<void> run();
 }

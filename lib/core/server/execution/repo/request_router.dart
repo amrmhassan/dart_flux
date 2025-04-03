@@ -2,7 +2,6 @@
 import 'dart:io';
 
 import 'package:dart_flux/core/errors/server_error.dart';
-import 'package:dart_flux/core/server/execution/interface/request_logger.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
@@ -18,14 +17,12 @@ class RequestRouter {
   final RequestProcessor _requestProcessor;
   final List<Middleware> _upperMiddlewares;
   final List<Middleware> _lowerMiddlewares;
-  final RequestLogger? logger;
 
   RequestRouter(
     this._request,
     this._requestProcessor, {
     required List<Middleware> lowerMiddlewares,
     required List<Middleware> upperMiddlewares,
-    required this.logger,
   }) : _upperMiddlewares = upperMiddlewares,
        _lowerMiddlewares = lowerMiddlewares;
 
@@ -34,7 +31,6 @@ class RequestRouter {
     this._requestProcessor,
     this._lowerMiddlewares,
     this._upperMiddlewares,
-    this.logger,
   ) {
     _run();
   }
@@ -43,14 +39,12 @@ class RequestRouter {
     RequestProcessor processor,
     List<Middleware> upperMiddlewares,
     List<Middleware> lowerMiddlewares,
-    RequestLogger? logger,
   ) {
     return RequestRouter._(
       request,
       processor,
       upperMiddlewares,
       lowerMiddlewares,
-      logger,
     );
   }
 
@@ -94,10 +88,8 @@ class RequestRouter {
     String httpMethod = _request.method;
     HttpMethod method = methodFromString(httpMethod);
     FluxRequest request = FluxRequest(_request);
-    logger?.hit(request);
     var entities = _requestProcessor.processors(path, method, null);
     entities = [..._upperMiddlewares, ...entities, ..._lowerMiddlewares];
-    var response = await _getResponse(entities, request);
-    logger?.log(request, response);
+    await _getResponse(entities, request);
   }
 }
