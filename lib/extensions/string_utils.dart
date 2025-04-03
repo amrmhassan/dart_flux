@@ -1,8 +1,9 @@
 extension StringUtils on String {
-  String strip(
-    String stripped, {
-    bool all = true,
-  }) =>
+  String get capitalize {
+    return this[0].toLowerCase() + this.substring(1).toLowerCase();
+  }
+
+  String strip(String stripped, {bool all = true}) =>
       all ? _stripStringAll(this, stripped) : _stripString(this, stripped);
 }
 
