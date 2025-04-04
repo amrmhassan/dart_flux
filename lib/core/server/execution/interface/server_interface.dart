@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 
@@ -19,4 +20,7 @@ abstract class ServerInterface {
   late List<Middleware>? lowerMiddlewares;
   HttpServer get server;
   Future<void> run();
+  Future<void> close({bool force = true});
+  late final bool loggerEnabled;
+  late FluxLoggerInterface? logger;
 }

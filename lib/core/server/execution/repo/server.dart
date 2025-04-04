@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:dart_flux/core/errors/server_error.dart';
+import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/execution/interface/server_interface.dart';
+import 'package:dart_flux/core/server/execution/repo/flux_logger.dart';
 import 'package:dart_flux/core/server/execution/repo/pipeline_runner.dart';
 import 'package:dart_flux/core/server/execution/utils/server_utils.dart';
 import 'package:dart_flux/core/server/middlewares/request_logger_middleware.dart';
@@ -32,16 +34,21 @@ class Server implements ServerInterface {
     this.requestProcessor, {
     this.upperMiddlewares,
     this.lowerMiddlewares,
+    this.loggerEnabled = true,
+    this.logger,
   }) {
     upperMiddlewares ??= [];
     lowerMiddlewares ??= [];
+
     _addLoggerMiddlewares();
   }
   List<Middleware> _systemUpper = [];
   List<Middleware> _systemLower = [];
 
   void _addLoggerMiddlewares() {
-    _systemUpper.insert(0, RequestLoggerMiddleware.upper);
+    if (!loggerEnabled) return;
+    logger ??= FluxPrintLogger();
+    _systemUpper.insert(0, RequestLoggerMiddleware.upper(logger));
     _systemLower.add(RequestLoggerMiddleware.lower);
   }
 
@@ -50,7 +57,7 @@ class Server implements ServerInterface {
   @override
   HttpServer get server {
     if (_server == null) {
-      throw ServerError('Server is not running yet, call .run');
+      throw ServerError('Server is not running yet or closed, call .run');
     }
     return _server!;
   }
@@ -58,9 +65,11 @@ class Server implements ServerInterface {
   @override
   Future<void> run() async {
     _server = await HttpServer.bind(ip, port);
+    port = _server!.port;
     String link = ServerUtils.serverLink(server);
-
-    print('server running on $link');
+    if (loggerEnabled) {
+      logger?.rawLog('server running on $link');
+    }
 
     server.listen(_run);
   }
@@ -82,4 +91,19 @@ class Server implements ServerInterface {
       entities: entities,
     ).run();
   }
+
+  @override
+  Future<void> close({bool force = true}) async {
+    await server.close(force: force);
+    _server = null;
+    if (loggerEnabled) {
+      logger?.rawLog('server closed');
+    }
+  }
+
+  @override
+  bool loggerEnabled;
+
+  @override
+  FluxLoggerInterface? logger;
 }
