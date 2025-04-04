@@ -9,6 +9,9 @@ void main(List<String> args) async {
       .get('', (request, response, pathArgs) {
         return SendResponse.data(response, 'list of users');
       })
+      .get('/hello/:id', (request, response, pathArgs) {
+        return SendResponse.data(response, 'hello user, ${pathArgs['id']}');
+      })
       .post('', (request, response, pathArgs) {
         return SendResponse.json(response, {'msg': 'Hello'});
       })

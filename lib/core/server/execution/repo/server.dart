@@ -2,10 +2,13 @@ import 'dart:io';
 
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/execution/interface/server_interface.dart';
-import 'package:dart_flux/core/server/execution/repo/request_router.dart';
+import 'package:dart_flux/core/server/execution/repo/pipeline_runner.dart';
 import 'package:dart_flux/core/server/execution/utils/server_utils.dart';
 import 'package:dart_flux/core/server/middlewares/request_logger_middleware.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
+import 'package:dart_flux/core/server/routing/models/flux_request.dart';
+import 'package:dart_flux/core/server/routing/models/flux_response.dart';
+import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 
 class Server implements ServerInterface {
@@ -34,10 +37,12 @@ class Server implements ServerInterface {
     lowerMiddlewares ??= [];
     _addLoggerMiddlewares();
   }
+  List<Middleware> _systemUpper = [];
+  List<Middleware> _systemLower = [];
 
   void _addLoggerMiddlewares() {
-    upperMiddlewares!.insert(0, RequestLoggerMiddleware.upper);
-    lowerMiddlewares!.add(RequestLoggerMiddleware.lower);
+    _systemUpper.insert(0, RequestLoggerMiddleware.upper);
+    _systemLower.add(RequestLoggerMiddleware.lower);
   }
 
   HttpServer? _server;
@@ -57,13 +62,24 @@ class Server implements ServerInterface {
 
     print('server running on $link');
 
-    server.listen(
-      (request) => RequestRouter.handle(
-        request,
-        requestProcessor,
-        upperMiddlewares!,
-        lowerMiddlewares!,
-      ),
-    );
+    server.listen(_run);
+  }
+
+  void _run(HttpRequest _request) async {
+    String path = _request.uri.path;
+    String httpMethod = _request.method;
+    HttpMethod method = methodFromString(httpMethod);
+    var entities = requestProcessor.processors(path, method);
+    FluxRequest request = FluxRequest(_request);
+    FluxResponse response = request.response;
+    await PipelineRunner(
+      systemUpper: _systemUpper,
+      systemLower: _systemLower,
+      upperMiddlewares: upperMiddlewares ?? [],
+      lowerMiddlewares: lowerMiddlewares ?? [],
+      request: request,
+      response: response,
+      entities: entities,
+    ).run();
   }
 }

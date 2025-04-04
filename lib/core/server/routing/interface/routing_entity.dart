@@ -40,12 +40,17 @@ class RoutingEntity {
     return _signature;
   }
 
-  bool checkMine(String path, HttpMethod method, String? basePathTemplate) {
+  bool checkMine(String path, HttpMethod method) {
     return PathChecker(
       requestPath: path,
       requestMethod: method,
       entity: this,
-      basePathTemplate: basePathTemplate,
     ).matches;
+  }
+
+  String? finalPath;
+  @override
+  String toString() {
+    return this.runtimeType.toString() + _signature;
   }
 }

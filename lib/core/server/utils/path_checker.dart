@@ -7,17 +7,14 @@ class PathChecker {
   final String _requestPath;
   final HttpMethod _requestMethod;
   final RoutingEntity _entity;
-  final String? _basePathTemplate;
 
   PathChecker({
     required String requestPath,
     required HttpMethod requestMethod,
     required RoutingEntity entity,
-    required String? basePathTemplate,
   }) : _entity = entity,
        _requestMethod = requestMethod,
-       _requestPath = requestPath,
-       _basePathTemplate = basePathTemplate;
+       _requestPath = requestPath;
 
   /// Checks if the request path matches the handler/middleware path template.
   /// Supports:
@@ -26,10 +23,7 @@ class PathChecker {
   /// - Wildcards (`/user/*` matches `/user/any/number/of/paths`)
   bool get matches {
     // handler data
-    var handlerPath = PathUtils.finalPath(
-      _basePathTemplate,
-      _entity.pathTemplate,
-    );
+    var handlerPath = _entity.finalPath;
     (_entity.pathTemplate ?? '');
     var handlerMethod =
         _entity.method == null ? _requestMethod : _entity.method;

@@ -22,7 +22,9 @@ class FluxRequestLoggerSaver implements RequestLoggerSaver {
     var duration = leftAt.difference(hitAt);
     String path = request.path;
     HttpMethod method = request.method;
-    print('${method.name} ${duration.inMilliseconds}ms $path ${response.code}');
+    print(
+      '$path - ${method.name.toUpperCase()} ${response.code} - ${duration.inMilliseconds} ms',
+    );
   }
 
   @override

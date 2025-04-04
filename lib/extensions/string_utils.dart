@@ -1,6 +1,6 @@
 extension StringUtils on String {
   String get capitalize {
-    return this[0].toLowerCase() + this.substring(1).toLowerCase();
+    return this[0].toUpperCase() + this.substring(1).toLowerCase();
   }
 
   String strip(String stripped, {bool all = true}) =>

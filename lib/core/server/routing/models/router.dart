@@ -30,11 +30,7 @@ class Router implements RequestProcessor {
   }
 
   @override
-  List<RoutingEntity> processors(
-    String path,
-    HttpMethod method,
-    String? basePathTemplate,
-  ) {
+  List<RoutingEntity> processors(String path, HttpMethod method) {
     // basePathTemplate is the passed one from the request processor parent (mostly a router)
     // _basePathTemplate is the current router base path template and comes next after the basePathTemplate
     // so the passed down base path template should be the sum of the upper routers base path templates
@@ -49,6 +45,7 @@ class Router implements RequestProcessor {
       path,
       method,
       finalBasePathTemplate,
+      handlerIsAMust: true,
     );
     if (main.isEmpty) return [];
 
@@ -80,58 +77,77 @@ class Router implements RequestProcessor {
     String? basePathTemplate, {
 
     /// this will ensure that the processors list must contain a handler at the end of the pipeline
-    bool handlerIsAMust = false,
+    required bool handlerIsAMust,
   }) {
+    bool foundHandler = false;
     List<RoutingEntity> mainProcessors = [];
     for (var requestProcessor in pipeLine) {
       // if handler then it should be the last of the pipeline
-      var entityProcessors = requestProcessor.processors(
-        path,
-        method,
-        basePathTemplate,
-      );
+      var entityProcessors = requestProcessor.processors(path, method);
       if (entityProcessors.isEmpty) continue;
-      mainProcessors.addAll(entityProcessors);
       if (requestProcessor is Handler || requestProcessor is Router) {
-        return mainProcessors;
+        foundHandler = true;
       }
+      mainProcessors.addAll(entityProcessors);
     }
-    return handlerIsAMust ? [] : mainProcessors;
+
+    if (handlerIsAMust && !foundHandler) return [];
+
+    return mainProcessors;
   }
 
   //? adding request processors
-  Router router(Router handler) {
-    _mainPipeline.add(handler);
+  Router router(Router router) {
+    router._basePathTemplate = _basePathTemplate;
+    _mainPipeline.add(router);
+
     return this;
   }
 
+  //raw
   Router handler(Handler handler) {
+    handler.basePathTemplate = _basePathTemplate;
+
     _mainPipeline.add(handler);
     return this;
   }
 
+  //raw
   Router rawMiddleware(Middleware middleware) {
+    middleware.basePathTemplate = _basePathTemplate;
+
     _mainPipeline.add(middleware);
     return this;
   }
 
   Router middleware(Processor processor) {
     Middleware m = Middleware(null, null, processor);
+
     return rawMiddleware(m);
   }
 
+  //raw
+
   /// upper middlewares will always be executed before any other middleware or handler on this router
   Router upperMiddleware(Middleware middleware) {
+    middleware.basePathTemplate = _basePathTemplate;
     _upperPipeline.add(middleware);
+
     return this;
   }
 
   Router upper(Processor processor) {
-    return upperMiddleware(Middleware(null, null, processor));
+    var m = Middleware(null, null, processor);
+
+    return upperMiddleware(m);
   }
+
+  //raw
 
   /// upper middlewares will always be executed after any other middleware or handler on this router
   Router lowerMiddleware(Middleware middleware) {
+    middleware.basePathTemplate = _basePathTemplate;
+
     _lowerPipeline.add(middleware);
     return this;
   }
@@ -147,6 +163,7 @@ class Router implements RequestProcessor {
     ProcessorHandler processor,
   ) {
     Handler h = Handler(path, method, processor);
+    h.basePathTemplate = _basePathTemplate;
     return handler(h);
   }
 
@@ -185,4 +202,7 @@ class Router implements RequestProcessor {
   Router patch(String path, ProcessorHandler processor) {
     return _addFastMethod(path, HttpMethod.patch, processor);
   }
+
+  @override
+  String? basePathTemplate;
 }

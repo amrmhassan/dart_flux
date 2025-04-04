@@ -18,8 +18,10 @@ class FluxRequest extends HttpEntity {
   FluxRequest(this._request) {
     _reader = RequestReader(request);
     _multipartReader = FluxMultiPart(request);
+    _context = Context();
   }
-  Context context = Context();
+  late Context _context;
+  Context get context => _context;
   late RequestReaderInterface _reader;
   late MultiPartInterface _multipartReader;
 
