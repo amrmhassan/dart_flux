@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/errors/file_exists_error.dart';
+import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/multi_part_interface.dart';
 import 'package:dart_flux/core/server/routing/models/bytes_form_data.dart';
 import 'package:dart_flux/core/server/routing/models/form_data.dart';
@@ -22,39 +23,46 @@ class FluxMultiPart implements MultiPartInterface {
     required String saveFolder,
     bool acceptFormFiles = true,
   }) async {
-    final contentType = request.headers.contentType;
-    List<TextFormField> fields = [];
-    List<FileFormField> files = [];
-    var transformer = MimeMultipartTransformer(
-      contentType!.parameters['boundary']!,
-    );
-    final parts = await transformer.bind(request).toList();
-    for (var part in parts) {
-      var broadCast = part.asBroadcastStream();
-      final disposition = part.headers[HttpHeaders.contentDisposition];
-      String? name = _getDispositionKey(disposition);
-      var contentType = part.headers[HttpHeaders.contentTypeHeader] ?? 'text';
-      if (contentType.startsWith('text')) {
-        // this is a text
-        var res = await utf8.decoder.bind(part).join();
-        TextFormField result = TextFormField(name, res);
-        fields.add(result);
-      } else {
-        if (!acceptFormFiles) {
-          throw Exception('files aren\'t accepted in this form');
+    try {
+      final contentType = request.headers.contentType;
+      List<TextFormField> fields = [];
+      List<FileFormField> files = [];
+      var transformer = MimeMultipartTransformer(
+        contentType!.parameters['boundary']!,
+      );
+      final parts = await transformer.bind(request).toList();
+      for (var part in parts) {
+        var broadCast = part.asBroadcastStream();
+        final disposition = part.headers[HttpHeaders.contentDisposition];
+        String? name = _getDispositionKey(disposition);
+        var contentType = part.headers[HttpHeaders.contentTypeHeader] ?? 'text';
+        if (contentType.startsWith('text')) {
+          // this is a text
+          var res = await utf8.decoder.bind(part).join();
+          TextFormField result = TextFormField(name, res);
+          fields.add(result);
+        } else {
+          if (!acceptFormFiles) {
+            throw Exception('files aren\'t accepted in this form');
+          }
+          // this should be a stream of a file
+          var filePath = await _savePartToFile(
+            broadCast,
+            contentType,
+            saveFolder,
+          );
+          FileFormField result = FileFormField(name, filePath);
+          files.add(result);
         }
-        // this should be a stream of a file
-        var filePath = await _savePartToFile(
-          broadCast,
-          contentType,
-          saveFolder,
-        );
-        FileFormField result = FileFormField(name, filePath);
-        files.add(result);
       }
+      FormData formData = FormData(fields: fields, files: files);
+      return formData;
+    } catch (e) {
+      throw ServerError(
+        'body content is not valid as a form: $e',
+        HttpStatus.badRequest,
+      );
     }
-    FormData formData = FormData(fields: fields, files: files);
-    return formData;
   }
 
   String? _getDispositionKey(String? disposition) {
@@ -71,35 +79,42 @@ class FluxMultiPart implements MultiPartInterface {
 
   @override
   Future<BytesFormData> readFormBytes({bool acceptFormFiles = true}) async {
-    final contentType = request.headers.contentType;
-    List<TextFormField> fields = [];
-    List<BytesFormField> files = [];
-    var transformer = MimeMultipartTransformer(
-      contentType!.parameters['boundary']!,
-    );
-    final parts = await transformer.bind(request).toList();
-    for (var part in parts) {
-      var broadCast = part.asBroadcastStream();
-      final disposition = part.headers[HttpHeaders.contentDisposition];
-      String? name = _getDispositionKey(disposition);
-      var contentType = part.headers[HttpHeaders.contentTypeHeader] ?? 'text';
-      if (contentType.startsWith('text')) {
-        // this is a text
-        var res = await utf8.decoder.bind(part).join();
-        TextFormField result = TextFormField(name, res);
-        fields.add(result);
-      } else {
-        // this should be a stream of a file
-        if (!acceptFormFiles) {
-          throw Exception('files aren\'t accepted in this form');
+    try {
+      final contentType = request.headers.contentType;
+      List<TextFormField> fields = [];
+      List<BytesFormField> files = [];
+      var transformer = MimeMultipartTransformer(
+        contentType!.parameters['boundary']!,
+      );
+      final parts = await transformer.bind(request).toList();
+      for (var part in parts) {
+        var broadCast = part.asBroadcastStream();
+        final disposition = part.headers[HttpHeaders.contentDisposition];
+        String? name = _getDispositionKey(disposition);
+        var contentType = part.headers[HttpHeaders.contentTypeHeader] ?? 'text';
+        if (contentType.startsWith('text')) {
+          // this is a text
+          var res = await utf8.decoder.bind(part).join();
+          TextFormField result = TextFormField(name, res);
+          fields.add(result);
+        } else {
+          // this should be a stream of a file
+          if (!acceptFormFiles) {
+            throw Exception('files aren\'t accepted in this form');
+          }
+          var filePath = await _partToBytes(broadCast, contentType);
+          BytesFormField result = BytesFormField(name, filePath);
+          files.add(result);
         }
-        var filePath = await _partToBytes(broadCast, contentType);
-        BytesFormField result = BytesFormField(name, filePath);
-        files.add(result);
       }
+      BytesFormData form = BytesFormData(fields: fields, files: files);
+      return form;
+    } catch (e) {
+      throw ServerError(
+        'body content is not valid as a form: $e',
+        HttpStatus.badRequest,
+      );
     }
-    BytesFormData form = BytesFormData(fields: fields, files: files);
-    return form;
   }
 
   Future<String> _savePartToFile(
@@ -163,28 +178,39 @@ class FluxMultiPart implements MultiPartInterface {
     bool throwErrorIfExist = true,
     bool overrideIfExist = false,
   }) async {
-    var completer = Completer<File>();
+    try {
+      var completer = Completer<File>();
 
-    File file = File(path);
-    if (file.existsSync() && throwErrorIfExist) {
-      throw FileExistsError();
-    } else if (file.existsSync() && !overrideIfExist) {
-      return file;
-    } else if (file.existsSync()) {
-      file.deleteSync();
-    }
-    file.createSync(recursive: true);
-    var raf = await file.open(mode: FileMode.write);
+      File file = File(path);
+      if (file.existsSync() && throwErrorIfExist) {
+        throw FileExistsError();
+      } else if (file.existsSync() && !overrideIfExist) {
+        return file;
+      } else if (file.existsSync()) {
+        file.deleteSync();
+      }
+      file.createSync(recursive: true);
+      var raf = await file.open(mode: FileMode.write);
 
-    request
-        .listen((event) {
+      request.listen((event) {
           raf.writeFromSync(event);
         })
-        .onDone(() {
+        ..onError((error) {
+          raf.closeSync();
+          completer.completeError(error);
+        })
+        ..onDone(() {
           raf.closeSync();
           completer.complete(file);
         });
 
-    return completer.future;
+      var res = await completer.future;
+      return res;
+    } catch (e) {
+      throw ServerError(
+        'body content is not valid as a file: $e',
+        HttpStatus.badRequest,
+      );
+    }
   }
 }
