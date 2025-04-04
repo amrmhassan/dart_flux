@@ -13,7 +13,7 @@ class Server implements ServerInterface {
   var ip;
 
   @override
-  List<Middleware> lowerMiddlewares;
+  List<Middleware>? lowerMiddlewares;
 
   @override
   int port;
@@ -22,17 +22,22 @@ class Server implements ServerInterface {
   RequestProcessor requestProcessor;
 
   @override
-  List<Middleware> upperMiddlewares;
+  List<Middleware>? upperMiddlewares;
   Server(
     this.ip,
     this.port,
     this.requestProcessor, {
-    List<Middleware> upperMiddlewares = const [],
-    List<Middleware> lowerMiddlewares = const [],
-  }) : lowerMiddlewares = lowerMiddlewares,
-       upperMiddlewares = upperMiddlewares {
-    upperMiddlewares.insert(0, RequestLoggerMiddleware.upper);
-    lowerMiddlewares.add(RequestLoggerMiddleware.lower);
+    this.upperMiddlewares,
+    this.lowerMiddlewares,
+  }) {
+    upperMiddlewares ??= [];
+    lowerMiddlewares ??= [];
+    _addLoggerMiddlewares();
+  }
+
+  void _addLoggerMiddlewares() {
+    upperMiddlewares!.insert(0, RequestLoggerMiddleware.upper);
+    lowerMiddlewares!.add(RequestLoggerMiddleware.lower);
   }
 
   HttpServer? _server;
@@ -56,8 +61,8 @@ class Server implements ServerInterface {
       (request) => RequestRouter.handle(
         request,
         requestProcessor,
-        upperMiddlewares,
-        lowerMiddlewares,
+        upperMiddlewares!,
+        lowerMiddlewares!,
       ),
     );
   }

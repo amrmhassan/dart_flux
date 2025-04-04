@@ -7,12 +7,17 @@ import 'package:dart_flux/core/server/routing/models/processor.dart';
 //! the path can't be null, the processor must return a response
 //! create 2 versions of a processor
 class Handler extends RoutingEntity implements RequestProcessor {
-  Handler(String pathTemplate, HttpMethod method, ProcessorHandler processor)
-    : super(
-        pathTemplate,
-        method,
-        processor,
-      ); // Ensure pathTemplate is never null
+  Handler(
+    String pathTemplate,
+    HttpMethod method,
+    ProcessorHandler processor, {
+    String? signature,
+  }) : super(
+         pathTemplate,
+         method,
+         processor,
+         signature: signature,
+       ); // Ensure pathTemplate is never null
   List<Middleware> _middlewares = [];
   List<Middleware> _lowerMiddleware = [];
 

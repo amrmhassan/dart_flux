@@ -5,8 +5,8 @@ class Context<V> {
   Map<String, dynamic> _data = {};
   Map<String, dynamic> get data => {..._data};
 
-  void add(String key, dynamic value) {
-    if (_data.containsKey(key)) {
+  void add(String key, dynamic value, {bool replace = false}) {
+    if (_data.containsKey(key) && !replace) {
       throw ServerError('context already has this key: $key');
     }
 

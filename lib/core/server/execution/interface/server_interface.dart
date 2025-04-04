@@ -13,10 +13,10 @@ abstract class ServerInterface {
   late final RequestProcessor requestProcessor;
 
   /// middleware that runs before the requestProcessor
-  late final List<Middleware> upperMiddlewares;
+  late List<Middleware>? upperMiddlewares;
 
   /// middleware that runs after the requestProcessor
-  late final List<Middleware> lowerMiddlewares;
+  late List<Middleware>? lowerMiddlewares;
   HttpServer get server;
   Future<void> run();
 }

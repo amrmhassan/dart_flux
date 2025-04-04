@@ -1,3 +1,6 @@
+import 'package:dart_flux/constants/global.dart';
+import 'package:dart_flux/core/errors/server_error.dart';
+import 'package:dart_flux/core/server/routing/models/handler.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/utils/path_checker.dart';
 
@@ -16,7 +19,26 @@ class RoutingEntity {
   /// this is the function that will be executed when hitting this routing entity
   final dynamic processor;
 
-  RoutingEntity(this.pathTemplate, this.method, this.processor);
+  late String _signature;
+
+  RoutingEntity(
+    this.pathTemplate,
+    this.method,
+    this.processor, {
+    String? signature,
+  }) {
+    if (signature != null) {
+      if (signature.contains('|')) {
+        throw ServerError('signature can\'t contain the special letter |');
+      }
+    }
+    String type = this is Handler ? 'H|' : 'M|';
+    _signature = type + (signature ?? dartID.generate());
+  }
+
+  String get signature {
+    return _signature;
+  }
 
   bool checkMine(String path, HttpMethod method, String? basePathTemplate) {
     return PathChecker(

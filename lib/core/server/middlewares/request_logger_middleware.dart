@@ -10,7 +10,7 @@ class RequestLoggerMiddleware {
   ) {
     request.context.add('hitAt', now);
     return request;
-  });
+  }, signature: 'adding hit time middleware');
   static Middleware lower = Middleware(null, null, (
     request,
     response,
@@ -27,5 +27,5 @@ class RequestLoggerMiddleware {
     ).log();
 
     return request;
-  });
+  }, signature: 'adding left time and logging middleware');
 }
