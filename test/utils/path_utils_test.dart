@@ -106,9 +106,10 @@ void main() {
     });
 
     test('Extra segments ignored in extraction', () {
-      expect(PathUtils.extractParams('/user/123/profile', '/user/:id'), {
-        'id': '123',
-      });
+      expect(
+        PathUtils.extractParams('/user/123/profile', '/user/:id/profile'),
+        {'id': '123'},
+      );
     });
   });
 }

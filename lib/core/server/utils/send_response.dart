@@ -4,6 +4,7 @@ import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
 import 'package:dart_flux/utils/response_utils.dart';
+import 'dart:convert' as convert;
 
 final ResponseUtils _responseUtils = ResponseUtils();
 
@@ -12,13 +13,11 @@ class SendResponse {
     FluxResponse response,
     Object v,
     int code,
-  ) {
-    if (v is Map) {
-      v.removeWhere((key, value) {
-        return value == null;
-      });
-    }
-    return response.write(v, code: code).close();
+  ) async {
+    response = response.write(v, code: code);
+
+    response = await response.close();
+    return response;
   }
 
   static Future<FluxResponse> error(FluxResponse response, Object error) {
@@ -66,7 +65,7 @@ class SendResponse {
   static Future<FluxResponse> json(FluxResponse response, Object data) {
     response.headers.contentType = ContentType.json;
 
-    return _write(response, data, HttpStatus.ok);
+    return _write(response, convert.json.encode(data), HttpStatus.ok);
   }
 
   static Future<FluxResponse> html(FluxResponse response, Object data) {

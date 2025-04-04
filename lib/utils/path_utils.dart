@@ -31,15 +31,36 @@ class PathUtils {
     String? handlerPath,
   ) {
     if (handlerPath == null) return {};
-    List<String> requestSegments = requestPath.split('/');
-    List<String> handlerSegments = handlerPath.split('/');
+
+    // Split paths into segments
+    List<String> requestSegments =
+        requestPath.split('/').where((segment) => segment.isNotEmpty).toList();
+    List<String> handlerSegments =
+        handlerPath.split('/').where((segment) => segment.isNotEmpty).toList();
+
     Map<String, String> params = {};
+    bool catchAllStarted = false; // Flag to handle * wildcard
 
     for (int i = 0; i < handlerSegments.length; i++) {
       if (handlerSegments[i].startsWith(':')) {
+        // Extract parameter name
         String paramName = handlerSegments[i].substring(1); // Remove ':'
-        params[paramName] = requestSegments[i];
+        if (i < requestSegments.length) {
+          params[paramName] = requestSegments[i];
+        }
+      } else if (handlerSegments[i] == '*') {
+        // Handle the wildcard "*" by capturing the rest of the path
+        catchAllStarted = true;
+        params['*'] = requestSegments
+            .sublist(i)
+            .join('/'); // Join the remaining path segments
+        break; // No need to continue once we've captured the rest of the path
       }
+    }
+
+    // If catch-all is started but no wildcard was found, capture all remaining path parts
+    if (!catchAllStarted && requestSegments.length > handlerSegments.length) {
+      params['*'] = requestSegments.sublist(handlerSegments.length).join('/');
     }
 
     return params;

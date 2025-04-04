@@ -5,15 +5,18 @@ import 'package:dart_flux/core/server/routing/models/router.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
 void main(List<String> args) async {
-  Router router = Router.path('/user')
-      .get('', (request, response, pathArgs) {
+  Router router = Router()
+      .get('/', (request, response, pathArgs) {
         return SendResponse.data(response, 'list of users');
       })
       .get('/hello/:id', (request, response, pathArgs) {
         return SendResponse.data(response, 'hello user, ${pathArgs['id']}');
       })
-      .post('', (request, response, pathArgs) {
-        return SendResponse.json(response, {'msg': 'Hello'});
+      .post('/', (request, response, pathArgs) {
+        return SendResponse.data(response, {'msg': 'Hello'});
+      })
+      .get('/before/*', (request, response, pathArgs) {
+        return SendResponse.data(response, {'path': pathArgs});
       })
       .delete('/:id', (request, response, pathArgs) {
         return SendResponse.data(
@@ -22,12 +25,6 @@ void main(List<String> args) async {
         );
       });
 
-  Server server = Server(
-    InternetAddress.anyIPv4,
-    3000,
-    router,
-    loggerEnabled: false,
-  );
+  Server server = Server(InternetAddress.anyIPv4, 3000, router);
   await server.run();
-  await server.close();
 }

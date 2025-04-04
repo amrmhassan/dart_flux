@@ -34,7 +34,9 @@ class PipelineRunner {
        _systemUpper = systemUpper;
 
   Future<FluxResponse> _error(Object e, StackTrace s) async {
-    _response = await SendResponse.error(_response, e);
+    if (!_response.closed) {
+      _response = await SendResponse.error(_response, e);
+    }
     logger.e(e);
     logger.e(s);
     return _response;
@@ -83,7 +85,9 @@ class PipelineRunner {
         } else if (output is FluxResponse) {
           _response = output;
           if (!output.closed) {
+            print('closing open response');
             _response = await output.close();
+            print('closed open response');
           }
           isNotFound = false;
         }

@@ -1,3 +1,3 @@
 import 'package:dio/dio.dart';
 
-Dio dio = Dio(BaseOptions(baseUrl: 'http://localhost:3000'));
+Dio dioPort(int port) => Dio(BaseOptions(baseUrl: 'http://localhost:$port'));
