@@ -7,7 +7,7 @@ import 'package:dart_flux/core/server/utils/send_response.dart';
 void main(List<String> args) async {
   Router router = Router()
       .get('/', (request, response, pathArgs) {
-        return SendResponse.data(response, 'list of users');
+        return SendResponse.json(response, {'ldjf': 'list of users'});
       })
       .get('/hello/:id', (request, response, pathArgs) {
         return SendResponse.data(response, 'hello user, ${pathArgs['id']}');

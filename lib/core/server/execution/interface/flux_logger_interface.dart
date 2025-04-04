@@ -1,4 +1,5 @@
 abstract class FluxLoggerInterface {
+  bool loggerEnabled = true;
   void rawLog(
     String msg, {
     LogLevel level = LogLevel.info,
