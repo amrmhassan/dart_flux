@@ -25,6 +25,11 @@ void main(List<String> args) async {
         );
       });
 
-  Server server = Server(InternetAddress.anyIPv4, 3000, router);
+  Server server = Server(
+    InternetAddress.anyIPv4,
+    3000,
+    router,
+    loggerEnabled: false,
+  );
   await server.run();
 }
