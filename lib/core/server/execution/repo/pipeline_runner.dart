@@ -1,7 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
-import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
