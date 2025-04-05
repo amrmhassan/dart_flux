@@ -5,7 +5,7 @@ import 'package:dart_flux/core/server/routing/models/router.dart';
 import 'package:dio/dio.dart';
 import 'package:test/test.dart';
 import 'api_caller.dart';
-import 'constants/processor.dart';
+import 'constants/test_processors.dart';
 
 void main() {
   late Server server;

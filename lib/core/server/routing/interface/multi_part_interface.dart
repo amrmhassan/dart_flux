@@ -5,7 +5,6 @@ import 'package:dart_flux/core/server/routing/models/form_data.dart';
 
 abstract class MultiPartInterface {
   late HttpRequest request;
-  late int? maxSize;
 
   Future<FormData> readForm({required String saveFolder, bool acceptFormFiles});
   Future<BytesFormData> readFormBytes({bool acceptFormFiles});

@@ -5,7 +5,7 @@ class FluxPrintLogger implements FluxLoggerInterface {
   FluxPrintLogger({this.loggerEnabled = true});
   @override
   void log(
-    String msg, {
+    Object msg, {
     LogLevel level = LogLevel.info,
     String? tag,
     String? signature,
@@ -23,14 +23,14 @@ class FluxPrintLogger implements FluxLoggerInterface {
 
   @override
   void rawLog(
-    String msg, {
+    Object msg, {
     LogLevel level = LogLevel.info,
     String? tag,
     String? signature,
   }) {
     if (!loggerEnabled) return;
 
-    String logMessage = msg;
+    String logMessage = msg.toString();
     if (tag != null) {
       logMessage += ' [$tag]';
     }

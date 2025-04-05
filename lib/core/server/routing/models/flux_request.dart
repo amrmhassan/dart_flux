@@ -1,6 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
-
 import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';

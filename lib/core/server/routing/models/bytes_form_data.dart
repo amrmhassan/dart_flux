@@ -4,7 +4,9 @@ import 'package:dart_flux/core/server/routing/interface/form_field_interface.dar
 import 'package:dart_flux/core/server/routing/models/form_field.dart';
 
 class BytesFormData extends FormDataInterface {
+  @override
   final List<TextFormField> fields;
+  @override
   final List<BytesFormField> files;
   BytesFormData({required this.fields, required this.files})
     : super(fields: fields, files: files);

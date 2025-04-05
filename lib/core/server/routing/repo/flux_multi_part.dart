@@ -17,7 +17,7 @@ class FluxMultiPart implements MultiPartInterface {
   @override
   HttpRequest request;
 
-  FluxMultiPart(this.request, {this.maxSize});
+  FluxMultiPart(this.request);
 
   @override
   Future<FormData> readForm({
@@ -93,9 +93,11 @@ class FluxMultiPart implements MultiPartInterface {
       final contentType = request.headers.contentType;
       List<TextFormField> fields = [];
       List<BytesFormField> files = [];
-      var transformer = MimeMultipartTransformer(
-        contentType!.parameters['boundary']!,
-      );
+      var boundary = contentType?.parameters['boundary'];
+      if (boundary == null) {
+        throw ServerError('boundary is empty', status: HttpStatus.badRequest);
+      }
+      var transformer = MimeMultipartTransformer(boundary);
       final parts = await transformer.bind(request).toList();
       for (var part in parts) {
         var broadCast = part.asBroadcastStream();
@@ -234,7 +236,4 @@ class FluxMultiPart implements MultiPartInterface {
       );
     }
   }
-
-  @override
-  int? maxSize;
 }

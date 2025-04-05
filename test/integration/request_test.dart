@@ -4,8 +4,10 @@ import 'package:dart_flux/core/server/execution/repo/server.dart';
 import 'package:dart_flux/core/server/routing/models/router.dart';
 import 'package:dio/dio.dart';
 import 'package:test/test.dart';
+import '../helper/file_helper.dart';
+import '../helper/form_data_helper.dart';
 import 'api_caller.dart';
-import 'constants/processor.dart';
+import 'constants/test_processors.dart';
 
 void main() {
   late Server server;
@@ -38,11 +40,18 @@ void main() {
       expect(res.statusCode, HttpStatus.ok);
     });
     test('form bytes body no files allowed', () async {
-      var res = await dio.post(
-        '/userForm',
-        data: FormData.fromMap({'name': 'Amr Hassan', 'file': "./"}),
-      );
-      expect(res.data, 'user name is Amr Hassan');
+      FormDataHelper helper = FormDataHelper();
+      FileHelper fileHelper = FileHelper();
+      var file = await fileHelper.create();
+      helper.addEntry('name', 'Amr Hassan');
+
+      await helper.addFile(file);
+      var form = helper.formDataRenderer;
+
+      var res = await dio.post('/userForm', data: form);
+      await fileHelper.delete();
+
+      expect(res.data['code'], 'files-not-allowed-in-form');
       expect(res.statusCode, HttpStatus.badRequest);
     });
   });

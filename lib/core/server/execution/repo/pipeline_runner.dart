@@ -46,8 +46,8 @@ class PipelineRunner {
       if (!_response.closed) {
         _response = await SendResponse.error(_response, e);
       }
-      logger.e(e);
-      logger.e(s);
+      fluxLogger?.rawLog(e);
+      fluxLogger?.rawLog(s);
     } catch (e) {
       _response =
           await _response
