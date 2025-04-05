@@ -1,10 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:dart_flux/constants/global.dart';
+import 'dart:io';
+
+import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
+import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 import 'package:dart_flux/utils/path_utils.dart';
 
@@ -16,6 +19,8 @@ class PipelineRunner {
   FluxRequest _request;
   FluxResponse _response;
   final List<RoutingEntity> _entities;
+  FluxLoggerInterface? fluxLogger;
+  ProcessorHandler? onNotFound;
 
   PipelineRunner({
     required List<Middleware> systemUpper,
@@ -25,6 +30,8 @@ class PipelineRunner {
     required FluxRequest request,
     required FluxResponse response,
     required List<RoutingEntity> entities,
+    required this.fluxLogger,
+    required this.onNotFound,
   }) : _request = request,
        _response = response,
        _entities = entities,
@@ -34,9 +41,18 @@ class PipelineRunner {
        _systemUpper = systemUpper;
 
   Future<FluxResponse> _error(Object e, StackTrace s) async {
-    _response = await SendResponse.error(_response, e);
-    logger.e(e);
-    logger.e(s);
+    try {
+      if (!_response.closed) {
+        _response = await SendResponse.error(_response, e);
+      }
+      fluxLogger?.rawLog(e);
+      fluxLogger?.rawLog(s);
+    } catch (e) {
+      _response =
+          await _response
+              .write(e.toString(), code: HttpStatus.internalServerError)
+              .close();
+    }
     return _response;
   }
 
@@ -83,12 +99,17 @@ class PipelineRunner {
         } else if (output is FluxResponse) {
           _response = output;
           if (!output.closed) {
+            fluxLogger?.rawLog('closing open response');
             _response = await output.close();
+            fluxLogger?.rawLog('closed open response');
           }
           isNotFound = false;
         }
       }
       if (isNotFound) {
+        if (onNotFound != null) {
+          return onNotFound!(_request, _response, {});
+        }
         return SendResponse.notFound(_response, 'request path not found');
       }
       return _response;

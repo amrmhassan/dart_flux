@@ -82,12 +82,17 @@ class Router implements RequestProcessor {
     bool foundHandler = false;
     List<RoutingEntity> mainProcessors = [];
     for (var requestProcessor in pipeLine) {
+      if ((requestProcessor is Handler || requestProcessor is Router) &&
+          foundHandler) {
+        continue;
+      }
       // if handler then it should be the last of the pipeline
       var entityProcessors = requestProcessor.processors(path, method);
       if (entityProcessors.isEmpty) continue;
       if (requestProcessor is Handler || requestProcessor is Router) {
         foundHandler = true;
       }
+
       mainProcessors.addAll(entityProcessors);
     }
 

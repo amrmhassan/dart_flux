@@ -4,16 +4,22 @@ import 'package:dart_flux/core/server/execution/repo/server.dart';
 import 'package:dart_flux/core/server/routing/models/router.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
+import '../test/integration/constants/test_processors.dart';
+
 void main(List<String> args) async {
-  Router router = Router.path('/user')
-      .get('', (request, response, pathArgs) {
-        return SendResponse.data(response, 'list of users');
+  Router router = Router()
+      .get('/', (request, response, pathArgs) async {
+        return SendResponse.data(response, 'name');
       })
+      .post('/userForm', Processors.bytesFormBodyNoFiles)
       .get('/hello/:id', (request, response, pathArgs) {
         return SendResponse.data(response, 'hello user, ${pathArgs['id']}');
       })
-      .post('', (request, response, pathArgs) {
-        return SendResponse.json(response, {'msg': 'Hello'});
+      .post('/', (request, response, pathArgs) {
+        return SendResponse.data(response, {'msg': 'Hello'});
+      })
+      .get('/before/*', (request, response, pathArgs) {
+        return SendResponse.data(response, {'path': pathArgs});
       })
       .delete('/:id', (request, response, pathArgs) {
         return SendResponse.data(
@@ -22,12 +28,6 @@ void main(List<String> args) async {
         );
       });
 
-  Server server = Server(
-    InternetAddress.anyIPv4,
-    3000,
-    router,
-    loggerEnabled: false,
-  );
+  Server server = Server(InternetAddress.anyIPv4, 3000, router);
   await server.run();
-  await server.close();
 }

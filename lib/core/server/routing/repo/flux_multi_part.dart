@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_flux/constants/global.dart';
+import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/file_exists_error.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/multi_part_interface.dart';
@@ -42,14 +43,22 @@ class FluxMultiPart implements MultiPartInterface {
           TextFormField result = TextFormField(name, res);
           fields.add(result);
         } else {
+          String? fileName = _extractFileName(disposition);
           if (!acceptFormFiles) {
-            throw Exception('files aren\'t accepted in this form');
+            throw ServerError(
+              errorString.filesNotAllowedInForm,
+              status: HttpStatus.badRequest,
+
+              trace: StackTrace.current,
+              code: errorCode.filesNotAllowedInForm,
+            );
           }
           // this should be a stream of a file
           var filePath = await _savePartToFile(
             broadCast,
             contentType,
             saveFolder,
+            fileName,
           );
           FileFormField result = FileFormField(name, filePath);
           files.add(result);
@@ -57,10 +66,13 @@ class FluxMultiPart implements MultiPartInterface {
       }
       FormData formData = FormData(fields: fields, files: files);
       return formData;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as a form: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidFormBody,
+        status: HttpStatus.badRequest,
+        e: e,
+        s: s,
+        code: errorCode.invalidFormBody,
       );
     }
   }
@@ -77,15 +89,29 @@ class FluxMultiPart implements MultiPartInterface {
     return null;
   }
 
+  String? _extractFileName(String? disposition) {
+    if (disposition == null) return null;
+    final regex = RegExp(r'filename="([^"]+)"');
+    final match = regex.firstMatch(disposition);
+
+    if (match != null) {
+      return match.group(1);
+    } else {
+      return null;
+    }
+  }
+
   @override
   Future<BytesFormData> readFormBytes({bool acceptFormFiles = true}) async {
     try {
       final contentType = request.headers.contentType;
       List<TextFormField> fields = [];
       List<BytesFormField> files = [];
-      var transformer = MimeMultipartTransformer(
-        contentType!.parameters['boundary']!,
-      );
+      var boundary = contentType?.parameters['boundary'];
+      if (boundary == null) {
+        throw ServerError('boundary is empty', status: HttpStatus.badRequest);
+      }
+      var transformer = MimeMultipartTransformer(boundary);
       final parts = await transformer.bind(request).toList();
       for (var part in parts) {
         var broadCast = part.asBroadcastStream();
@@ -100,7 +126,12 @@ class FluxMultiPart implements MultiPartInterface {
         } else {
           // this should be a stream of a file
           if (!acceptFormFiles) {
-            throw Exception('files aren\'t accepted in this form');
+            throw ServerError(
+              errorString.filesNotAllowedInForm,
+              status: HttpStatus.badRequest,
+              trace: StackTrace.current,
+              code: errorCode.filesNotAllowedInForm,
+            );
           }
           var filePath = await _partToBytes(broadCast, contentType);
           BytesFormField result = BytesFormField(name, filePath);
@@ -109,10 +140,13 @@ class FluxMultiPart implements MultiPartInterface {
       }
       BytesFormData form = BytesFormData(fields: fields, files: files);
       return form;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as a form: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidFormBody,
+        e: e,
+        status: HttpStatus.badRequest,
+        s: s,
+        code: errorCode.invalidFormBody,
       );
     }
   }
@@ -121,6 +155,7 @@ class FluxMultiPart implements MultiPartInterface {
     Stream<List<int>> part,
     String contentType,
     String saveFolder,
+    String? fileNameOrg,
   ) async {
     final completer = Completer<String>();
     List<String> parts = contentType.split('/');
@@ -130,8 +165,8 @@ class FluxMultiPart implements MultiPartInterface {
     } else {
       fileExtension = '.${parts[1]}';
     }
-    String fileName = dartID.generate();
-    String filePath = '${saveFolder.strip('/')}/$fileName$fileExtension';
+    String fileName = fileNameOrg ?? '${dartID.generate()}$fileExtension';
+    String filePath = '${saveFolder.strip('/')}/$fileName';
     File file = File(filePath);
     file.createSync(recursive: true);
     var raf = await file.open(mode: FileMode.write);
@@ -182,11 +217,12 @@ class FluxMultiPart implements MultiPartInterface {
       var completer = Completer<File>();
 
       File file = File(path);
-      if (file.existsSync() && throwErrorIfExist) {
+      bool fileExists = file.existsSync();
+      if (fileExists && throwErrorIfExist) {
         throw FileExistsError();
-      } else if (file.existsSync() && !overrideIfExist) {
+      } else if (fileExists && !overrideIfExist) {
         return file;
-      } else if (file.existsSync()) {
+      } else if (fileExists) {
         file.deleteSync();
       }
       file.createSync(recursive: true);
@@ -206,10 +242,13 @@ class FluxMultiPart implements MultiPartInterface {
 
       var res = await completer.future;
       return res;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as a file: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidFileBody,
+        status: HttpStatus.badRequest,
+        e: e,
+        s: s,
+        code: errorCode.invalidFileBody,
       );
     }
   }

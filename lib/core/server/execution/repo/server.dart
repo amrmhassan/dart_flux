@@ -12,6 +12,7 @@ import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
+import 'package:dart_flux/core/server/routing/models/processor.dart';
 
 class Server implements ServerInterface {
   @override
@@ -28,6 +29,15 @@ class Server implements ServerInterface {
 
   @override
   List<Middleware>? upperMiddlewares;
+
+  @override
+  bool loggerEnabled;
+
+  @override
+  FluxLoggerInterface? logger;
+
+  @override
+  ProcessorHandler? onNotFound;
   Server(
     this.ip,
     this.port,
@@ -36,6 +46,7 @@ class Server implements ServerInterface {
     this.lowerMiddlewares,
     this.loggerEnabled = true,
     this.logger,
+    this.onNotFound,
   }) {
     upperMiddlewares ??= [];
     lowerMiddlewares ??= [];
@@ -47,7 +58,7 @@ class Server implements ServerInterface {
 
   void _addLoggerMiddlewares() {
     if (!loggerEnabled) return;
-    logger ??= FluxPrintLogger();
+    logger ??= FluxPrintLogger(loggerEnabled: loggerEnabled);
     _systemUpper.insert(0, RequestLoggerMiddleware.upper(logger));
     _systemLower.add(RequestLoggerMiddleware.lower);
   }
@@ -67,9 +78,7 @@ class Server implements ServerInterface {
     _server = await HttpServer.bind(ip, port);
     port = _server!.port;
     String link = ServerUtils.serverLink(server);
-    if (loggerEnabled) {
-      logger?.rawLog('server running on $link');
-    }
+    logger?.rawLog('server running on $link');
 
     server.listen(_run);
   }
@@ -88,6 +97,8 @@ class Server implements ServerInterface {
       lowerMiddlewares: lowerMiddlewares ?? [],
       request: request,
       response: response,
+      fluxLogger: logger,
+      onNotFound: onNotFound,
       entities: entities,
     ).run();
   }
@@ -96,14 +107,6 @@ class Server implements ServerInterface {
   Future<void> close({bool force = true}) async {
     await server.close(force: force);
     _server = null;
-    if (loggerEnabled) {
-      logger?.rawLog('server closed');
-    }
+    logger?.rawLog('server closed');
   }
-
-  @override
-  bool loggerEnabled;
-
-  @override
-  FluxLoggerInterface? logger;
 }

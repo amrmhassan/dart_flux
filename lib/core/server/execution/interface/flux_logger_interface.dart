@@ -1,13 +1,14 @@
 abstract class FluxLoggerInterface {
+  bool loggerEnabled = true;
   void rawLog(
-    String msg, {
+    Object msg, {
     LogLevel level = LogLevel.info,
     String? tag,
     String? signature,
   });
 
   void log(
-    String msg, {
+    Object msg, {
     LogLevel level = LogLevel.info,
     String? tag,
     String? signature,
