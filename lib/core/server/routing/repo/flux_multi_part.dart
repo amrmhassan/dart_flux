@@ -43,6 +43,7 @@ class FluxMultiPart implements MultiPartInterface {
           TextFormField result = TextFormField(name, res);
           fields.add(result);
         } else {
+          String? fileName = _extractFileName(disposition);
           if (!acceptFormFiles) {
             throw ServerError(
               errorString.filesNotAllowedInForm,
@@ -57,6 +58,7 @@ class FluxMultiPart implements MultiPartInterface {
             broadCast,
             contentType,
             saveFolder,
+            fileName,
           );
           FileFormField result = FileFormField(name, filePath);
           files.add(result);
@@ -85,6 +87,18 @@ class FluxMultiPart implements MultiPartInterface {
       }
     }
     return null;
+  }
+
+  String? _extractFileName(String? disposition) {
+    if (disposition == null) return null;
+    final regex = RegExp(r'filename="([^"]+)"');
+    final match = regex.firstMatch(disposition);
+
+    if (match != null) {
+      return match.group(1);
+    } else {
+      return null;
+    }
   }
 
   @override
@@ -141,6 +155,7 @@ class FluxMultiPart implements MultiPartInterface {
     Stream<List<int>> part,
     String contentType,
     String saveFolder,
+    String? fileNameOrg,
   ) async {
     final completer = Completer<String>();
     List<String> parts = contentType.split('/');
@@ -150,8 +165,8 @@ class FluxMultiPart implements MultiPartInterface {
     } else {
       fileExtension = '.${parts[1]}';
     }
-    String fileName = dartID.generate();
-    String filePath = '${saveFolder.strip('/')}/$fileName$fileExtension';
+    String fileName = fileNameOrg ?? '${dartID.generate()}$fileExtension';
+    String filePath = '${saveFolder.strip('/')}/$fileName';
     File file = File(filePath);
     file.createSync(recursive: true);
     var raf = await file.open(mode: FileMode.write);
