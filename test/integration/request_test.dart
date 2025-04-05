@@ -16,7 +16,11 @@ void main() {
   setUpAll(() async {
     Router router = Router()
         .post('/user', Processors.jsonBody)
-        .post('/userForm', Processors.formBodyNoFiles);
+        .post('/userForm', Processors.bytesFormBodyNoFiles)
+        .post('/userFormWithFile', Processors.bytesFormBodyWithFiles)
+        .post('/userFilesForm', Processors.bytesFormBodyNoFiles)
+        .post('/userFilesFormWithFile', Processors.filesFormBodyWithFiles)
+        .post('/file', Processors.receiveFile);
     server = Server(InternetAddress.anyIPv4, 0, router, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);
@@ -53,6 +57,67 @@ void main() {
 
       expect(res.data['code'], 'files-not-allowed-in-form');
       expect(res.statusCode, HttpStatus.badRequest);
+    });
+    test('form file body no files allowed', () async {
+      FormDataHelper helper = FormDataHelper();
+      FileHelper fileHelper = FileHelper();
+      var file = await fileHelper.create();
+      helper.addEntry('name', 'Amr Hassan');
+
+      await helper.addFile(file);
+      var form = helper.formDataRenderer;
+
+      var res = await dio.post('/userFilesForm', data: form);
+      await fileHelper.delete();
+
+      expect(res.data['code'], 'files-not-allowed-in-form');
+      expect(res.statusCode, HttpStatus.badRequest);
+    });
+    test('form bytes body with files allowed', () async {
+      FormDataHelper helper = FormDataHelper();
+      FileHelper fileHelper = FileHelper();
+      var file = await fileHelper.create();
+      int length = file.lengthSync();
+      helper.addEntry('name', 'Amr Hassan');
+
+      await helper.addFile(file, fileKey: 'file');
+      var form = helper.formDataRenderer;
+
+      var res = await dio.post('/userFormWithFile', data: form);
+      await fileHelper.delete();
+
+      expect(res.data, '$length');
+      expect(res.statusCode, HttpStatus.ok);
+    });
+    test('form file body with files allowed', () async {
+      FormDataHelper helper = FormDataHelper();
+      FileHelper fileHelper = FileHelper();
+      var file = await fileHelper.create();
+      int length = file.lengthSync();
+
+      helper.addEntry('name', 'Amr Hassan');
+
+      await helper.addFile(file, fileKey: 'file');
+      var form = helper.formDataRenderer;
+
+      var res = await dio.post('/userFilesFormWithFile', data: form);
+      await fileHelper.delete();
+
+      expect(res.data, '$length');
+      expect(res.statusCode, HttpStatus.ok);
+    });
+    test('receive file', () async {
+      FileHelper fileHelper = FileHelper();
+      var file = await fileHelper.create();
+      int length = file.lengthSync();
+
+      var bytes = await file.readAsBytes();
+
+      var res = await dio.post('/file', data: bytes);
+      await fileHelper.delete();
+
+      expect(res.data, '$length');
+      expect(res.statusCode, HttpStatus.ok);
     });
   });
 }

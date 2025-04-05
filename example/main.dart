@@ -11,7 +11,7 @@ void main(List<String> args) async {
       .get('/', (request, response, pathArgs) async {
         return SendResponse.data(response, 'name');
       })
-      .post('/userForm', Processors.formBodyNoFiles)
+      .post('/userForm', Processors.bytesFormBodyNoFiles)
       .get('/hello/:id', (request, response, pathArgs) {
         return SendResponse.data(response, 'hello user, ${pathArgs['id']}');
       })

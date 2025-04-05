@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
@@ -27,7 +29,7 @@ class Processors {
 
     return SendResponse.data(response, 'user name is $name');
   };
-  static ProcessorHandler formBodyNoFiles = (
+  static ProcessorHandler bytesFormBodyNoFiles = (
     request,
     response,
     pathArgs,
@@ -36,5 +38,52 @@ class Processors {
     String name = body.getField('name')!.value;
 
     return SendResponse.data(response, 'user name is $name');
+  };
+  static ProcessorHandler bytesFormBodyWithFiles = (
+    request,
+    response,
+    pathArgs,
+  ) async {
+    var body = await request.bytesForm();
+    var file = body.getFile('file')!;
+
+    return SendResponse.data(response, file.bytes.length);
+  };
+  static ProcessorHandler filesFormBodyNoFiles = (
+    request,
+    response,
+    pathArgs,
+  ) async {
+    var body = await request.form(acceptFormFiles: false);
+    String name = body.getField('name')!.value;
+
+    return SendResponse.data(response, 'user name is $name');
+  };
+  static ProcessorHandler filesFormBodyWithFiles = (
+    request,
+    response,
+    pathArgs,
+  ) async {
+    var body = await request.form();
+    File file = body.getFile('file')!;
+    int length = file.lengthSync();
+    try {
+      file.parent.deleteSync(recursive: true);
+    } catch (e) {
+      print('Error deleting file: $e');
+    }
+
+    return SendResponse.data(response, length);
+  };
+  static ProcessorHandler receiveFile = (request, response, pathArgs) async {
+    var file = await request.file(path: './temp/file.bin');
+    int length = file.lengthSync();
+    try {
+      file.parent.deleteSync(recursive: true);
+    } catch (e) {
+      print('Error deleting file: $e');
+    }
+
+    return SendResponse.data(response, length);
   };
 }
