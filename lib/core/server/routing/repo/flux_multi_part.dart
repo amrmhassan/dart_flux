@@ -217,11 +217,12 @@ class FluxMultiPart implements MultiPartInterface {
       var completer = Completer<File>();
 
       File file = File(path);
-      if (file.existsSync() && throwErrorIfExist) {
+      bool fileExists = file.existsSync();
+      if (fileExists && throwErrorIfExist) {
         throw FileExistsError();
-      } else if (file.existsSync() && !overrideIfExist) {
+      } else if (fileExists && !overrideIfExist) {
         return file;
-      } else if (file.existsSync()) {
+      } else if (fileExists) {
         file.deleteSync();
       }
       file.createSync(recursive: true);

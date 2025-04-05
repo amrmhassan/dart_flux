@@ -28,6 +28,14 @@ class FluxRequest extends HttpEntity {
   late MultiPartInterface _multipartReader;
 
   HttpHeaders get headers => _request.headers;
+  Map<String, String> get headersMap {
+    Map<String, String> map = {};
+    headers.forEach((key, value) {
+      map[key] = value.join(',');
+    });
+    return map;
+  }
+
   Uri get uri => _request.uri;
   Uri get requestedUri => _request.requestedUri;
   String get path => _request.uri.path;
@@ -82,7 +90,11 @@ class FluxRequest extends HttpEntity {
   }) {
     _checkMaxSize();
 
-    return _multipartReader.receiveFile(path: path);
+    return _multipartReader.receiveFile(
+      path: path,
+      throwErrorIfExist: throwErrorIfExist,
+      overrideIfExist: overrideIfExist,
+    );
   }
 
   Future<BytesFormData> bytesForm({bool acceptFormFiles = true}) {

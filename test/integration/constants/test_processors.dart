@@ -76,12 +76,26 @@ class Processors {
     return SendResponse.data(response, length);
   };
   static ProcessorHandler receiveFile = (request, response, pathArgs) async {
-    var file = await request.file(path: './temp/file.bin');
+    var noDuplicate = request.headersMap['no-duplicate'] == 'true';
+    var deleteAfter =
+        request.headersMap['delete-after'] == null
+            ? true
+            : request.headersMap['delete-after'] == 'true';
+    String? pathHeaders = request.headersMap['path'];
+    bool override = request.headersMap['override'] == 'true';
+    String path = pathHeaders ?? './temp/file.bin';
+    var file = await request.file(
+      path: path,
+      throwErrorIfExist: noDuplicate,
+      overrideIfExist: override,
+    );
     int length = file.lengthSync();
-    try {
-      file.parent.deleteSync(recursive: true);
-    } catch (e) {
-      print('Error deleting file: $e');
+    if (deleteAfter) {
+      try {
+        file.parent.deleteSync(recursive: true);
+      } catch (e) {
+        print('Error deleting file: $e');
+      }
     }
 
     return SendResponse.data(response, length);

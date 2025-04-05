@@ -119,5 +119,59 @@ void main() {
       expect(res.data, '$length');
       expect(res.statusCode, HttpStatus.ok);
     });
+    test('receive file throw error if exist', () async {
+      FileHelper fileHelper = FileHelper();
+      var file = await fileHelper.create();
+      int length = file.lengthSync();
+
+      var bytes = await file.readAsBytes();
+
+      var res = await dio.post(
+        '/file',
+        data: bytes,
+        options: Options(headers: {'delete-after': 'false'}),
+      );
+      var res2 = await dio.post(
+        '/file',
+        data: bytes,
+        options: Options(headers: {'no-duplicate': 'true'}),
+      );
+      var res3 = await dio.post('/file', data: bytes);
+      await fileHelper.delete();
+
+      expect(res.data, '$length');
+      expect(res.statusCode, HttpStatus.ok);
+      expect(res2.statusCode, HttpStatus.conflict);
+      expect(res2.data['msg'], 'File already exists');
+      expect(res3.data, '$length');
+      expect(res3.statusCode, HttpStatus.ok);
+    });
+    test('receive file override file', () async {
+      FileHelper fileHelper = FileHelper();
+      var file = await fileHelper.create();
+      int length = file.lengthSync();
+
+      var bytes = await file.readAsBytes();
+
+      var res = await dio.post(
+        '/file',
+        data: bytes,
+        options: Options(headers: {'delete-after': 'false'}),
+      );
+      var file2 = await FileHelper(fileSize: 1024 * 2).create();
+      var bytes2 = await file2.readAsBytes();
+      int length2 = file2.lengthSync();
+      var res2 = await dio.post(
+        '/file',
+        data: bytes2,
+        options: Options(headers: {'override': 'true'}),
+      );
+      await fileHelper.delete();
+
+      expect(res.data, '$length');
+      expect(res.statusCode, HttpStatus.ok);
+      expect(res2.statusCode, HttpStatus.ok);
+      expect(res2.data, '$length2');
+    });
   });
 }
