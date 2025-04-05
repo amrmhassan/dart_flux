@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_flux/constants/global.dart';
+import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/file_exists_error.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/multi_part_interface.dart';
@@ -16,7 +17,7 @@ class FluxMultiPart implements MultiPartInterface {
   @override
   HttpRequest request;
 
-  FluxMultiPart(this.request);
+  FluxMultiPart(this.request, {this.maxSize});
 
   @override
   Future<FormData> readForm({
@@ -43,7 +44,13 @@ class FluxMultiPart implements MultiPartInterface {
           fields.add(result);
         } else {
           if (!acceptFormFiles) {
-            throw Exception('files aren\'t accepted in this form');
+            throw ServerError(
+              errorString.filesNotAllowedInForm,
+              status: HttpStatus.badRequest,
+
+              trace: StackTrace.current,
+              code: errorCode.filesNotAllowedInForm,
+            );
           }
           // this should be a stream of a file
           var filePath = await _savePartToFile(
@@ -57,10 +64,13 @@ class FluxMultiPart implements MultiPartInterface {
       }
       FormData formData = FormData(fields: fields, files: files);
       return formData;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as a form: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidFormBody,
+        status: HttpStatus.badRequest,
+        e: e,
+        s: s,
+        code: errorCode.invalidFormBody,
       );
     }
   }
@@ -100,7 +110,12 @@ class FluxMultiPart implements MultiPartInterface {
         } else {
           // this should be a stream of a file
           if (!acceptFormFiles) {
-            throw Exception('files aren\'t accepted in this form');
+            throw ServerError(
+              errorString.filesNotAllowedInForm,
+              status: HttpStatus.badRequest,
+              trace: StackTrace.current,
+              code: errorCode.filesNotAllowedInForm,
+            );
           }
           var filePath = await _partToBytes(broadCast, contentType);
           BytesFormField result = BytesFormField(name, filePath);
@@ -109,10 +124,13 @@ class FluxMultiPart implements MultiPartInterface {
       }
       BytesFormData form = BytesFormData(fields: fields, files: files);
       return form;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as a form: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidFormBody,
+        e: e,
+        status: HttpStatus.badRequest,
+        s: s,
+        code: errorCode.invalidFormBody,
       );
     }
   }
@@ -206,11 +224,17 @@ class FluxMultiPart implements MultiPartInterface {
 
       var res = await completer.future;
       return res;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as a file: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidFileBody,
+        status: HttpStatus.badRequest,
+        e: e,
+        s: s,
+        code: errorCode.invalidFileBody,
       );
     }
   }
+
+  @override
+  int? maxSize;
 }

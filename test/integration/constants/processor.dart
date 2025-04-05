@@ -21,4 +21,20 @@ class Processors {
     String path = pathArgs['*'];
     return SendResponse.data(response, 'provided path is $path');
   };
+  static ProcessorHandler jsonBody = (request, response, pathArgs) async {
+    var body = await request.asJson;
+    String name = body['name'];
+
+    return SendResponse.data(response, 'user name is $name');
+  };
+  static ProcessorHandler formBodyNoFiles = (
+    request,
+    response,
+    pathArgs,
+  ) async {
+    var body = await request.bytesForm(acceptFormFiles: false);
+    String name = body.getField('name')!.value;
+
+    return SendResponse.data(response, 'user name is $name');
+  };
 }

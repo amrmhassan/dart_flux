@@ -19,11 +19,10 @@ class BytesFormData extends FormDataInterface {
 
   @override
   BytesFormField? getFile(String key) {
-    BytesFormField? file =
-        files
-            .cast()
-            .firstWhere((element) => element.key == key, orElse: () => null)
-            .value;
+    BytesFormField? file = files.cast().firstWhere(
+      (element) => element.key == key,
+      orElse: () => null,
+    );
     return file;
   }
 }

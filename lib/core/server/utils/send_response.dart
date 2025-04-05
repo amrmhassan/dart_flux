@@ -12,9 +12,9 @@ class SendResponse {
   static Future<FluxResponse> _write(
     FluxResponse response,
     Object v,
-    int code,
+    int status,
   ) async {
-    response = response.write(v, code: code);
+    response = response.write(v, code: status);
 
     response = await response.close();
     return response;
@@ -23,12 +23,12 @@ class SendResponse {
   static Future<FluxResponse> error(
     FluxResponse response,
     Object err, {
-    int? code,
+    int? status,
   }) {
     if (err is ServerError) {
-      return json(response, err.toJson(), code: code ?? err.code);
+      return json(response, err.toJson(), status: status ?? err.status);
     } else {
-      ServerError e = ServerError(err.toString(), code);
+      ServerError e = ServerError(err.toString(), status: status);
       return error(response, e);
     }
   }
@@ -36,16 +36,16 @@ class SendResponse {
   static Future<FluxResponse> data(
     FluxResponse response,
     Object data, {
-    int? code,
+    int? status,
   }) {
-    return _write(response, data, code ?? HttpStatus.ok);
+    return _write(response, data, status ?? HttpStatus.ok);
   }
 
   static Future<FluxResponse> notFound(FluxResponse response, [Object? data]) {
     return error(
       response,
       data ?? 'Requested data not found',
-      code: HttpStatus.notFound,
+      status: HttpStatus.notFound,
     );
   }
 
@@ -56,7 +56,7 @@ class SendResponse {
     return error(
       response,
       data ?? 'Not authorized',
-      code: HttpStatus.unauthorized,
+      status: HttpStatus.unauthorized,
     );
   }
 
@@ -67,38 +67,38 @@ class SendResponse {
     return error(
       response,
       data ?? 'Sent body is not valid',
-      code: HttpStatus.badRequest,
+      status: HttpStatus.badRequest,
     );
   }
 
   static Future<FluxResponse> json(
     FluxResponse response,
     Object data, {
-    int? code,
+    int? status,
   }) {
     response.headers.contentType = ContentType.json;
 
-    return _write(response, convert.json.encode(data), code ?? HttpStatus.ok);
+    return _write(response, convert.json.encode(data), status ?? HttpStatus.ok);
   }
 
   static Future<FluxResponse> html(
     FluxResponse response,
     Object data, {
-    int? code,
+    int? status,
   }) {
     response.headers.contentType = ContentType.html;
 
-    return _write(response, data, code ?? HttpStatus.ok);
+    return _write(response, data, status ?? HttpStatus.ok);
   }
 
   static Future<FluxResponse> binary(
     FluxResponse response,
     List<int> bytes, {
-    int? code,
+    int? status,
   }) {
     response.headers.contentType = ContentType.binary;
 
-    return response.add(bytes, code: code ?? HttpStatus.ok).close();
+    return response.add(bytes, code: status ?? HttpStatus.ok).close();
   }
 
   static FluxResponse file(FluxRequest request, File file) {

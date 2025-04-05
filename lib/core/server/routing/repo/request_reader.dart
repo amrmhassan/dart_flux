@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/request_reader_interface.dart';
 
@@ -11,10 +12,13 @@ class RequestReader implements RequestReaderInterface {
     try {
       var jsonBody = json.decode(await readString());
       return jsonBody;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as json: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidJsonBody,
+        status: HttpStatus.badRequest,
+        e: e,
+        s: s,
+        code: errorCode.invalidJsonBody,
       );
     }
   }
@@ -26,7 +30,10 @@ class RequestReader implements RequestReaderInterface {
       List<String> allowedMimes = ['application', 'text'];
       // allowed mimes = text,application
       if (!allowedMimes.any((element) => element == mimeType)) {
-        throw Exception('body content is not valid as string');
+        throw ServerError(
+          errorString.invalidStringBody,
+          status: HttpStatus.unsupportedMediaType,
+        );
       }
       if (contentType != null && contentType.charset != null) {
         final decoder = Encoding.getByName(contentType.charset!);
@@ -37,10 +44,13 @@ class RequestReader implements RequestReaderInterface {
       }
       var decodedBody = await utf8.decoder.bind(request).join();
       return decodedBody;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as string: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidStringBody,
+        status: HttpStatus.badRequest,
+        e: e,
+        s: s,
+        code: errorCode.invalidStringBody,
       );
     }
   }
@@ -60,10 +70,13 @@ class RequestReader implements RequestReaderInterface {
       );
 
       return completer.future;
-    } catch (e) {
-      throw ServerError(
-        'body content is not valid as bytes: $e',
-        HttpStatus.badRequest,
+    } catch (e, s) {
+      throw ServerError.fromCatch(
+        msg: errorString.invalidBytesBody,
+        status: HttpStatus.badRequest,
+        e: e,
+        s: s,
+        code: errorCode.invalidBytesBody,
       );
     }
   }
