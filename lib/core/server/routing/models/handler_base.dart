@@ -7,8 +7,8 @@ import 'package:dart_flux/utils/path_utils.dart';
 
 //! the path can't be null, the processor must return a response
 //! create 2 versions of a processor
-class Handler extends RoutingEntity implements RequestProcessor {
-  Handler(
+abstract class HandlerBase extends RoutingEntity implements RequestProcessor {
+  HandlerBase(
     String pathTemplate,
     HttpMethod method,
     ProcessorHandler processor, {
@@ -22,22 +22,10 @@ class Handler extends RoutingEntity implements RequestProcessor {
        {
     finalPath = null;
   }
-  List<Middleware> _middlewares = [];
-  List<Middleware> _lowerMiddleware = [];
+  List<Middleware> middlewares = [];
+  List<Middleware> lowerMiddleware = [];
 
-  Handler middleware(Processor processor) {
-    var middleware = Middleware(pathTemplate, method, processor);
-    middleware.basePathTemplate = basePathTemplate;
-    _middlewares.add(middleware);
-    return this;
-  }
-
-  Handler lowerMiddleware(Middleware middleware) {
-    middleware.basePathTemplate = basePathTemplate;
-    _lowerMiddleware.add(middleware);
-    return this;
-  }
-
+  @override
   String? get finalPath {
     return PathUtils.finalPath(basePathTemplate, pathTemplate);
   }
@@ -45,13 +33,13 @@ class Handler extends RoutingEntity implements RequestProcessor {
   @override
   List<RoutingEntity> processors(String path, HttpMethod method) {
     var middlewaresProcessors =
-        _middlewares
+        middlewares
             .where((middleware) => middleware.checkMine(path, method))
             .map((middleware) => middleware)
             .toList();
 
     var lowerMiddlewaresProcessors =
-        _lowerMiddleware
+        lowerMiddleware
             .where((middleware) => middleware.checkMine(path, method))
             .map((middleware) => middleware)
             .toList();

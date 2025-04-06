@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
-import 'package:dart_flux/core/server/routing/models/handler.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
+import 'package:dart_flux/core/server/routing/repo/handler.dart';
 import 'package:dart_flux/core/server/routing/repo/router.dart';
 import 'package:dart_flux/utils/path_utils.dart';
 

@@ -13,6 +13,8 @@ class Middleware extends RoutingEntity implements RequestProcessor {
   }) : super(pathTemplate, method, processor, signature: signature) {
     finalPath = null;
   }
+
+  @override
   String? get finalPath {
     return PathUtils.finalPath(basePathTemplate, pathTemplate);
   }

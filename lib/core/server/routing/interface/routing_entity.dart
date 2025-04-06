@@ -1,7 +1,7 @@
 import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
-import 'package:dart_flux/core/server/routing/models/handler.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
+import 'package:dart_flux/core/server/routing/repo/handler.dart';
 import 'package:dart_flux/core/server/utils/path_checker.dart';
 
 /// the entity responsible for making a change to the request
