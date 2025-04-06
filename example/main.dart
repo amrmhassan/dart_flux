@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_flux/core/server/execution/repo/server.dart';
-import 'package:dart_flux/core/server/routing/models/router.dart';
+import 'package:dart_flux/core/server/routing/repo/router.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
 import '../test/integration/constants/test_processors.dart';
