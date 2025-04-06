@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:dart_flux/core/server/execution/repo/server.dart';
+import 'package:dart_flux/core/app/models/fast_flux_app.dart';
 import 'package:dart_flux/core/server/routing/repo/router.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
@@ -26,6 +24,6 @@ void main(List<String> args) async {
         );
       });
 
-  Server server = Server(InternetAddress.anyIPv4, 3000, router);
-  await server.run();
+  FastFluxApp app = FastFluxApp(router, port: 3000);
+  await app.run();
 }
