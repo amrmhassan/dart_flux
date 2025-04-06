@@ -3,12 +3,12 @@ import 'dart:math';
 import 'dart:typed_data';
 
 class FileHelper {
-  final String _fileName;
+  late String _fileName;
   final int _fileSize; // Size in bytes
 
-  FileHelper({String fileName = 'random_file.bin', int fileSize = 1024})
-    : _fileSize = fileSize,
-      _fileName = fileName;
+  FileHelper({String? fileName, int fileSize = 1024}) : _fileSize = fileSize {
+    _fileName = fileName ?? Random().nextInt(10000).toString();
+  }
 
   // Method to create a random file with random bytes
   Future<File> create() async {

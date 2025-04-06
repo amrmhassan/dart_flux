@@ -59,6 +59,11 @@ class FluxResponse extends HttpEntity {
   // Returns the current status code of the response
   int get code => _response.statusCode;
 
+  Future<FluxResponse> flush() async {
+    await _response.flush();
+    return this;
+  }
+
   // Provides access to the underlying HttpResponse
   HttpResponse get response => _request.response;
 

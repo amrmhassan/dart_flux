@@ -36,7 +36,10 @@ class SendResponse {
       return json(response, err.toJson(), status: status ?? err.status);
     } else {
       // If it's not a ServerError, create a new ServerError and call this method again.
-      ServerError e = ServerError(err.toString(), status: status);
+      ServerError e = ServerError(
+        err.toString(),
+        status: status ?? HttpStatus.internalServerError,
+      );
       return error(response, e);
     }
   }
@@ -115,19 +118,26 @@ class SendResponse {
     FluxResponse response,
     List<int> bytes, {
     int? status,
-  }) {
+  }) async {
     // Set the content type to binary.
     response.headers.contentType = ContentType.binary;
+    response.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
 
-    // Add the binary data to the response and close it.
-    return response.add(bytes, code: status ?? HttpStatus.ok).close();
+    // Add the binary data to the response.
+    response.add(bytes, code: HttpStatus.ok);
+
+    // Flush the response buffer to ensure all data is written.
+    await response.flush();
+
+    // Close the response.
+    return response.close();
   }
 
   /// A method to send a file in the response by chunking it.
-  static FluxResponse file(FluxRequest request, File file) {
+  static Future<FluxResponse> file(FluxRequest request, File file) async {
     // Send the file using the ResponseUtils utility for chunked file transfer.
-    _responseUtils.sendChunkedFile(request, file);
-    return request.response;
+    await _responseUtils.sendChunkedFile(request, file);
+    return request.response.close();
   }
 
   /// A method to stream a file in the response asynchronously.

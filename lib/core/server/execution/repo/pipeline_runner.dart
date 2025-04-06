@@ -67,10 +67,14 @@ class PipelineRunner {
       fluxLogger?.rawLog(e);
       fluxLogger?.rawLog(s);
     } catch (e) {
-      _response =
-          await _response
-              .write(e.toString(), code: HttpStatus.internalServerError)
-              .close();
+      try {
+        _response =
+            await _response
+                .write(e.toString(), code: HttpStatus.internalServerError)
+                .close();
+      } catch (e) {
+        fluxLogger?.rawLog(e);
+      }
     }
     return _response;
   }

@@ -45,7 +45,7 @@ void main() {
     });
     test('form bytes body no files allowed', () async {
       FormDataHelper helper = FormDataHelper();
-      FileHelper fileHelper = FileHelper();
+      FileHelper fileHelper = FileHelper(fileName: 'iiiiiiii');
       var file = await fileHelper.create();
       helper.addEntry('name', 'Amr Hassan');
 
@@ -60,7 +60,7 @@ void main() {
     });
     test('form file body no files allowed', () async {
       FormDataHelper helper = FormDataHelper();
-      FileHelper fileHelper = FileHelper();
+      FileHelper fileHelper = FileHelper(fileName: 'lllllll');
       var file = await fileHelper.create();
       helper.addEntry('name', 'Amr Hassan');
 
@@ -75,7 +75,7 @@ void main() {
     });
     test('form bytes body with files allowed', () async {
       FormDataHelper helper = FormDataHelper();
-      FileHelper fileHelper = FileHelper();
+      FileHelper fileHelper = FileHelper(fileName: 'kkkkkk');
       var file = await fileHelper.create();
       int length = file.lengthSync();
       helper.addEntry('name', 'Amr Hassan');
@@ -91,7 +91,7 @@ void main() {
     });
     test('form file body with files allowed', () async {
       FormDataHelper helper = FormDataHelper();
-      FileHelper fileHelper = FileHelper();
+      FileHelper fileHelper = FileHelper(fileName: 'lkjlkjkjkljkljoiuio');
       var file = await fileHelper.create();
       int length = file.lengthSync();
 
@@ -107,7 +107,7 @@ void main() {
       expect(res.statusCode, HttpStatus.ok);
     });
     test('receive file', () async {
-      FileHelper fileHelper = FileHelper();
+      FileHelper fileHelper = FileHelper(fileName: 'iouiuiouiouo');
       var file = await fileHelper.create();
       int length = file.lengthSync();
 
@@ -120,7 +120,7 @@ void main() {
       expect(res.statusCode, HttpStatus.ok);
     });
     test('receive file throw error if exist', () async {
-      FileHelper fileHelper = FileHelper();
+      FileHelper fileHelper = FileHelper(fileName: 'uyuiyuiyuiy');
       var file = await fileHelper.create();
       int length = file.lengthSync();
 
@@ -147,7 +147,7 @@ void main() {
       expect(res3.statusCode, HttpStatus.ok);
     });
     test('receive file override file', () async {
-      FileHelper fileHelper = FileHelper();
+      FileHelper fileHelper = FileHelper(fileName: 'qwerqwerqwrqer');
       var file = await fileHelper.create();
       int length = file.lengthSync();
 
@@ -158,7 +158,11 @@ void main() {
         data: bytes,
         options: Options(headers: {'delete-after': 'false'}),
       );
-      var file2 = await FileHelper(fileSize: 1024 * 2).create();
+      var file2 =
+          await FileHelper(
+            fileSize: 1024 * 2,
+            fileName: 'nmbnmbnmbmm',
+          ).create();
       var bytes2 = await file2.readAsBytes();
       int length2 = file2.lengthSync();
       var res2 = await dio.post(
@@ -167,6 +171,7 @@ void main() {
         options: Options(headers: {'override': 'true'}),
       );
       await fileHelper.delete();
+      await file2.delete();
 
       expect(res.data, '$length');
       expect(res.statusCode, HttpStatus.ok);

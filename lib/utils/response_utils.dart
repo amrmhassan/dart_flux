@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:mime/mime.dart';
 
@@ -8,59 +9,56 @@ class ResponseUtils {
   ///
   /// - If a "Range" header is provided, it sends only the requested byte range of the file.
   /// - If no range is provided, it sends the full file.
-  void sendChunkedFile(FluxRequest req, File file) {
+  Future<void> sendChunkedFile(FluxRequest req, File file) async {
     if (!file.existsSync()) {
       file.createSync(recursive: true);
-      // throw Exception('File $filePath doesn\'t exist'); // Uncomment if desired
     }
 
-    // Get file name and MIME type
     String fileName = file.path.split('/').last;
-    String? mime = lookupMimeType(file.path);
-
-    // Set basic response headers
-    req.response.statusCode = HttpStatus.ok;
-    req.response.headers
-      ..contentType = ContentType.parse(mime ?? 'application/octet-stream')
-      ..add('Content-Disposition', 'attachment; filename=$fileName')
-      ..add('Accept-Ranges', 'bytes');
+    String? mime = lookupMimeType(file.path) ?? 'application/octet-stream';
 
     int fileLength = file.lengthSync();
     int start = 0;
     int end = fileLength - 1;
 
-    // Handle "Range" header if present (supports partial content requests)
     String? range = req.headers.value('range');
     if (range != null) {
-      List<String> parts = range.split('=');
-      List<String> positions = parts[1].split('-');
+      final parts = range.split('=');
+      final positions = parts[1].split('-');
       start = int.parse(positions[0]);
       end =
-          positions.length < 2 || int.tryParse(positions[1]) == null
+          (positions.length < 2 || positions[1].isEmpty)
               ? fileLength - 1
               : int.parse(positions[1]);
+
       req.response.statusCode = HttpStatus.partialContent;
       req.response.headers
-        ..contentLength = end - start + 1
-        ..add('Content-Range', 'bytes $start-$end/$fileLength');
+        ..contentType = ContentType.parse(mime)
+        ..add('Content-Disposition', 'attachment; filename=$fileName')
+        ..add('Accept-Ranges', 'bytes')
+        ..add('Content-Range', 'bytes $start-$end/$fileLength')
+        ..contentLength = end - start + 1;
     } else {
-      req.response.headers.contentLength = fileLength;
+      req.response.statusCode = HttpStatus.ok;
+      req.response.headers
+        ..contentType = ContentType.parse(mime)
+        ..add('Content-Disposition', 'attachment; filename=$fileName')
+        ..add('Accept-Ranges', 'bytes')
+        ..contentLength = fileLength;
     }
 
-    // Open file and send the appropriate chunk or full file
-    RandomAccessFile raf = file.openSync();
-    raf.setPositionSync(start);
-    Stream<List<int>> fileStream = Stream.value(raf.readSync(end - start + 1));
-    req.response.response
-        .addStream(
-          fileStream.handleError(
-            (e) => throw Exception('Error reading file: $e'),
-          ),
-        )
-        .then((_) async {
-          raf.closeSync();
-          await req.response.close();
-        });
+    try {
+      final raf = await file.open();
+      await raf.setPosition(start);
+      final chunk = await raf.read(end - start + 1);
+      await raf.close();
+      await req.response.response.addStream(Stream.value(chunk));
+    } catch (e) {
+      // You can log the error here if needed
+      throw ServerError.fromCatch(msg: 'Error while sending file', e: e);
+    } finally {
+      // await req.response.close();
+    }
   }
 
   /// Streams a file to the response with support for range requests.

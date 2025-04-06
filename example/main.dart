@@ -8,9 +8,7 @@ import '../test/integration/constants/test_processors.dart';
 
 void main(List<String> args) async {
   Router router = Router()
-      .get('/', (request, response, pathArgs) async {
-        return SendResponse.data(response, 'name');
-      })
+      .get('/', Processors.file)
       .post('/userForm', Processors.bytesFormBodyNoFiles)
       .get('/hello/:id', (request, response, pathArgs) {
         return SendResponse.data(response, 'hello user, ${pathArgs['id']}');
