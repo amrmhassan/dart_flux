@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:dart_flux/core/server/routing/models/bytes_form_data.dart';
-import 'package:dart_flux/core/server/routing/models/form_data.dart';
+import 'package:dart_flux/core/server/parser/models/bytes_form_data.dart';
+import 'package:dart_flux/core/server/parser/models/form_data.dart';
 
 abstract class MultiPartInterface {
   late HttpRequest request;

@@ -1,5 +1,5 @@
-import 'package:dart_flux/core/server/routing/interface/form_field_interface.dart';
-import 'package:dart_flux/core/server/routing/models/text_form_field.dart';
+import 'package:dart_flux/core/server/parser/interface/form_field_interface.dart';
+import 'package:dart_flux/core/server/parser/models/text_form_field.dart';
 
 abstract class FormDataInterface {
   late List<TextFormField> fields;

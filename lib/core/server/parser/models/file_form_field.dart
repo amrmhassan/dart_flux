@@ -1,4 +1,4 @@
-import 'package:dart_flux/core/server/routing/interface/form_field_interface.dart';
+import 'package:dart_flux/core/server/parser/interface/form_field_interface.dart';
 
 class FileFormField extends FormFieldInterface {
   final String? key;

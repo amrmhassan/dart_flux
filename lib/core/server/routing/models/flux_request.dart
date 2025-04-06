@@ -3,15 +3,15 @@ import 'dart:io';
 import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
-import 'package:dart_flux/core/server/routing/interface/multi_part_interface.dart';
-import 'package:dart_flux/core/server/routing/interface/request_reader_interface.dart';
-import 'package:dart_flux/core/server/routing/models/bytes_form_data.dart';
+import 'package:dart_flux/core/server/parser/interface/multi_part_interface.dart';
+import 'package:dart_flux/core/server/parser/interface/request_reader_interface.dart';
+import 'package:dart_flux/core/server/parser/models/bytes_form_data.dart';
 import 'package:dart_flux/core/server/routing/models/context.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
-import 'package:dart_flux/core/server/routing/models/form_data.dart';
+import 'package:dart_flux/core/server/parser/models/form_data.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
-import 'package:dart_flux/core/server/routing/repo/flux_multi_part.dart';
-import 'package:dart_flux/core/server/routing/repo/request_reader.dart';
+import 'package:dart_flux/core/server/parser/repo/flux_multi_part.dart';
+import 'package:dart_flux/core/server/parser/repo/request_reader.dart';
 
 class FluxRequest extends HttpEntity {
   final HttpRequest _request;

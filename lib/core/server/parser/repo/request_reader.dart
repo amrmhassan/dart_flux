@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
-import 'package:dart_flux/core/server/routing/interface/request_reader_interface.dart';
+import 'package:dart_flux/core/server/parser/interface/request_reader_interface.dart';
 
 class RequestReader implements RequestReaderInterface {
   RequestReader(this.request);
