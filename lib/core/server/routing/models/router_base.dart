@@ -1,4 +1,5 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
@@ -7,16 +8,23 @@ import 'package:dart_flux/core/server/routing/repo/handler.dart';
 import 'package:dart_flux/core/server/routing/repo/router.dart';
 import 'package:dart_flux/utils/path_utils.dart';
 
+/// A base class that represents a router in the application.
+/// This class handles processing requests by managing pipelines (upper, main, and lower)
+/// of middlewares and handlers for a specific route.
 abstract class RouterBase implements RequestProcessor {
-  /// this is a path template for the whole router and will apply for each sub request processor
+  /// The base path for the router, which will apply to all sub-request processors.
   String? basePath;
-  // only middlewares
+
+  // Pipeline for middlewares that run before the main processing
   List<Middleware> upperPipeline = [];
-  // can be middlewares or handlers or routers
+
+  // Main pipeline that can include middlewares, handlers, or other routers
   List<RequestProcessor> mainPipeline = [];
-  // only middlewares
+
+  // Pipeline for middlewares that run after the main processing
   List<Middleware> lowerPipeline = [];
 
+  /// Constructor that initializes the router with optional pipelines.
   RouterBase({
     List<Middleware>? upperPipeline,
     List<RequestProcessor>? mainPipeline,
@@ -27,25 +35,27 @@ abstract class RouterBase implements RequestProcessor {
 
   @override
   List<RoutingEntity> processors(String path, HttpMethod method) {
-    // basePathTemplate is the passed one from the request processor parent (mostly a router)
-    // basePath is the current router base path template and comes next after the basePathTemplate
-    // so the passed down base path template should be the sum of the upper routers base path templates
+    // Combines base paths and extracts processors from different pipelines.
 
+    // The final base path template is the concatenation of the basePath
+    // and basePathTemplate from the parent (usually another router).
     String? finalBasePathTemplate = PathUtils.finalPath(
       basePath,
       basePathTemplate,
     );
-    // main pipeline
+
+    // Extract processors from the main pipeline
     var main = _extractFromPipeline(
       mainPipeline,
       path,
       method,
       finalBasePathTemplate,
-      handlerIsAMust: true,
+      handlerIsAMust:
+          true, // Ensures at least one handler exists in the pipeline
     );
     if (main.isEmpty) return [];
 
-    // upper pipeline
+    // Extract processors from the upper pipeline
     var upper = _extractFromPipeline(
       upperPipeline,
       path,
@@ -54,7 +64,7 @@ abstract class RouterBase implements RequestProcessor {
       handlerIsAMust: false,
     );
 
-    // lower pipeline
+    // Extract processors from the lower pipeline
     var lower = _extractFromPipeline(
       lowerPipeline,
       path,
@@ -62,36 +72,48 @@ abstract class RouterBase implements RequestProcessor {
       finalBasePathTemplate,
       handlerIsAMust: false,
     );
-    // then add them together then return
+
+    // Return the combined processors in the correct order
     return [...upper, ...main, ...lower];
   }
 
+  /// Extracts processors from a specific pipeline (upper, main, or lower).
+  ///
+  /// This function ensures that the pipeline contains the necessary processors (handlers, routers)
+  /// in the correct order, and ensures that a handler is present if specified.
   List<RoutingEntity> _extractFromPipeline(
     List<RequestProcessor> pipeLine,
     String path,
     HttpMethod method,
     String? basePathTemplate, {
 
-    /// this will ensure that the processors list must contain a handler at the end of the pipeline
+    /// If true, the pipeline must contain a handler at the end.
     required bool handlerIsAMust,
   }) {
     bool foundHandler = false;
     List<RoutingEntity> mainProcessors = [];
+
+    // Iterate over the pipeline to extract valid processors
     for (var requestProcessor in pipeLine) {
+      // Ensure that a handler is the last processor in the pipeline
       if ((requestProcessor is Handler || requestProcessor is Router) &&
           foundHandler) {
         continue;
       }
-      // if handler then it should be the last of the pipeline
+
       var entityProcessors = requestProcessor.processors(path, method);
       if (entityProcessors.isEmpty) continue;
+
+      // If it's a handler or router, mark that we've found a handler
       if (requestProcessor is Handler || requestProcessor is Router) {
         foundHandler = true;
       }
 
+      // Add valid processors to the main list
       mainProcessors.addAll(entityProcessors);
     }
 
+    // If a handler is required but not found, return an empty list
     if (handlerIsAMust && !foundHandler) return [];
 
     return mainProcessors;

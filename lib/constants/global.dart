@@ -6,3 +6,6 @@ DartID dartID = DartID();
 
 /// this is for logging in the console
 Logger logger = Logger();
+
+String frameworkName = "Dart Flux";
+String frameworkVersion = "0.0.1";

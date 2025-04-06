@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
 
+import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
@@ -11,15 +12,31 @@ import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 import 'package:dart_flux/utils/path_utils.dart';
 
+/// This class is responsible for running the full middleware and routing pipeline
+/// in a Dart Flux server.
+///
+/// It executes middleware layers (system & custom), processes routing entities,
+/// and handles errors or unmatched paths with fallbacks.
 class PipelineRunner {
+  // System-level middlewares that run before and after everything else.
   final List<Middleware> _systemUpper;
   final List<Middleware> _systemLower;
+
+  // Custom middlewares added at the server level.
   final List<Middleware> _upperMiddlewares;
   final List<Middleware> _lowerMiddlewares;
+
+  // Current HTTP request and response objects.
   FluxRequest _request;
   FluxResponse _response;
+
+  // List of routing entities to attempt matching and processing.
   final List<RoutingEntity> _entities;
+
+  // Optional logger used for logging raw error/output messages.
   FluxLoggerInterface? fluxLogger;
+
+  // Optional fallback handler for unmatched routes.
   ProcessorHandler? onNotFound;
 
   PipelineRunner({
@@ -40,6 +57,8 @@ class PipelineRunner {
        _systemLower = systemLower,
        _systemUpper = systemUpper;
 
+  /// Handles any errors thrown in middleware or routing,
+  /// sends a proper error response, and logs the error/stack trace.
   Future<FluxResponse> _error(Object e, StackTrace s) async {
     try {
       if (!_response.closed) {
@@ -56,13 +75,15 @@ class PipelineRunner {
     return _response;
   }
 
+  /// Extracts path parameters from the request URL based on the middleware/entity's path.
   Map<String, String> _params(RoutingEntity entity) {
     String requestPath = _request.path;
     String? entityPath = entity.finalPath;
-    var params = PathUtils.extractParams(requestPath, entityPath);
-    return params;
+    return PathUtils.extractParams(requestPath, entityPath);
   }
 
+  /// Sequentially executes the given list of middlewares,
+  /// passing updated request/response objects down the chain.
   Future<HttpEntity> _runMiddlewares(List<Middleware> middlewares) async {
     try {
       HttpEntity? output;
@@ -86,11 +107,13 @@ class PipelineRunner {
     }
   }
 
+  /// Processes routing entities to handle the request.
+  /// If no entity matches, falls back to [onNotFound] or returns 404.
   Future<FluxResponse> _getResponse(List<RoutingEntity> entities) async {
     try {
       bool isNotFound = true;
-
       late HttpEntity output;
+
       for (var entity in entities) {
         output = await entity.processor(_request, _response, _params(entity));
 
@@ -106,19 +129,24 @@ class PipelineRunner {
           isNotFound = false;
         }
       }
+
       if (isNotFound) {
         if (onNotFound != null) {
           return onNotFound!(_request, _response, {});
         }
         return SendResponse.notFound(_response, 'request path not found');
       }
+
       return _response;
     } catch (e, s) {
       return _error(e, s);
     }
   }
 
+  /// Tracks if the response was closed before lower/system middlewares.
   bool _responseClosed = false;
+
+  /// Updates internal request/response based on middleware or route output.
   void _newEntity(HttpEntity entity) {
     if (entity is FluxResponse) {
       _response = entity;
@@ -128,17 +156,29 @@ class PipelineRunner {
     }
   }
 
+  /// Entry point to run the full middleware → route → middleware pipeline.
+  ///
+  /// The order of execution:
+  /// 1. System Upper Middlewares
+  /// 2. Custom Upper Middlewares
+  /// 3. Routing Entities (match request to handler)
+  /// 4. Custom Lower Middlewares
+  /// 5. System Lower Middlewares
   Future<FluxResponse> run() async {
     try {
+      _response.headers.add('X-Framework-Name', frameworkName);
+      _response.headers.add('X-Framework-Version', frameworkVersion);
       HttpEntity systemUpper = await _runMiddlewares(_systemUpper);
       _newEntity(systemUpper);
 
       HttpEntity upper = await _runMiddlewares(_upperMiddlewares);
       _newEntity(upper);
+
       if (!_responseClosed) {
         _response = await _getResponse(_entities);
         _responseClosed = true;
       }
+
       HttpEntity lower = await _runMiddlewares(_lowerMiddlewares);
       _newEntity(lower);
 
@@ -147,6 +187,7 @@ class PipelineRunner {
     } catch (e, s) {
       _response = await _error(e, s);
     }
+
     return _response;
   }
 }

@@ -2,116 +2,64 @@
 
 import 'package:dart_flux/core/errors/server_error.dart';
 
-enum HttpMethod { get, post, put, delete, head, connect, options, trace, patch }
+/// Enum representing HTTP methods.
+enum HttpMethod {
+  /// HTTP GET method, typically used for retrieving resources.
+  get,
 
+  /// HTTP POST method, used for submitting data.
+  post,
+
+  /// HTTP PUT method, used for updating resources.
+  put,
+
+  /// HTTP DELETE method, used for removing resources.
+  delete,
+
+  /// HTTP HEAD method, used to retrieve metadata (headers) of a resource.
+  head,
+
+  /// HTTP CONNECT method, used for establishing a network connection.
+  connect,
+
+  /// HTTP OPTIONS method, used to describe the communication options for the target resource.
+  options,
+
+  /// HTTP TRACE method, used for diagnostic purposes to trace the path of the request.
+  trace,
+
+  /// HTTP PATCH method, used for partial updates to a resource.
+  patch,
+}
+
+/// Converts an HTTP method string to an [HttpMethod] enum.
+///
+/// This function takes an HTTP method as a string (e.g., "GET", "POST")
+/// and returns the corresponding [HttpMethod] enum value.
+/// If the provided string doesn't match any of the HTTP methods,
+/// it throws a [ServerError].
+///
+/// Example:
+/// ```dart
+/// methodFromString('GET'); // returns HttpMethod.get
+/// methodFromString('POST'); // returns HttpMethod.post
+/// ```
+///
+/// Throws:
+/// [ServerError] if the string doesn't match any HTTP method.
 HttpMethod methodFromString(String httpMethod) {
   var values = HttpMethod.values;
+
+  // Find the index of the matching method (case insensitive)
   int index = values.indexWhere(
     (e) => e.name.toLowerCase() == httpMethod.toLowerCase(),
   );
+
+  // If no matching method is found, throw an error
   if (index == -1) {
     throw ServerError('method $httpMethod not found');
   }
+
+  // Return the corresponding [HttpMethod] enum
   return values[index];
 }
-
-// class HttpMethod {
-//   static const _HttpMethodModel get = _GetMethod();
-//   static const _HttpMethodModel post = _PostMethod();
-//   static const _HttpMethodModel put = _PutMethod();
-//   static const _HttpMethodModel delete = _DeleteMethod();
-//   static const _HttpMethodModel head = _HeadMethod();
-//   static const _HttpMethodModel connect = _CONNECTMethod();
-//   static const _HttpMethodModel options = _OptionsMethod();
-//   static const _HttpMethodModel trace = _TraceMethod();
-//   static const _HttpMethodModel patch = _PatchMethod();
-
-//   /// This will just use the request method
-//   /// meaning that the `RoutingEntity` will run on each http method
-//   static const _HttpMethodModel all = _All();
-
-//   /// this is just useless
-//   static const _HttpMethodModel unknown = _UnknownMethod();
-// }
-
-// class _HttpMethodModel {
-//   final String method;
-//   const _HttpMethodModel(this.method);
-//   // static _HttpMethodModel fromString(String? m) {
-//   //   String? method = m?.toLowerCase();
-//   //   if (method == const _GetMethod().method) {
-//   //     return const _GetMethod();
-//   //   } else if (method == const _PostMethod().method) {
-//   //     return const _PostMethod();
-//   //   } else if (method == const _PutMethod().method) {
-//   //     return const _PutMethod();
-//   //   } else if (method == const _DeleteMethod().method) {
-//   //     return const _DeleteMethod();
-//   //   } else if (method == const _HeadMethod().method) {
-//   //     return const _HeadMethod();
-//   //   } else if (method == const _CONNECTMethod().method) {
-//   //     return const _CONNECTMethod();
-//   //   } else if (method == const _OptionsMethod().method) {
-//   //     return const _OptionsMethod();
-//   //   } else if (method == const _TraceMethod().method) {
-//   //     return const _TraceMethod();
-//   //   } else if (method == const _PatchMethod().method) {
-//   //     return const _PatchMethod();
-//   //   } else if (method == const _All().method) {
-//   //     return const _All();
-//   //   }
-//   //   return const _UnknownMethod();
-//   // }
-
-//   @override
-//   int get hashCode => method.hashCode;
-
-//   @override
-//   bool operator ==(Object other) {
-//     return hashCode == other.hashCode;
-//   }
-// }
-
-// class _GetMethod extends _HttpMethodModel {
-//   const _GetMethod() : super('get');
-// }
-
-// class _PostMethod extends _HttpMethodModel {
-//   const _PostMethod() : super('post');
-// }
-
-// class _PutMethod extends _HttpMethodModel {
-//   const _PutMethod() : super('put');
-// }
-
-// class _DeleteMethod extends _HttpMethodModel {
-//   const _DeleteMethod() : super('delete');
-// }
-
-// class _HeadMethod extends _HttpMethodModel {
-//   const _HeadMethod() : super('head');
-// }
-
-// class _CONNECTMethod extends _HttpMethodModel {
-//   const _CONNECTMethod() : super('connect');
-// }
-
-// class _OptionsMethod extends _HttpMethodModel {
-//   const _OptionsMethod() : super('options');
-// }
-
-// class _TraceMethod extends _HttpMethodModel {
-//   const _TraceMethod() : super('trace');
-// }
-
-// class _PatchMethod extends _HttpMethodModel {
-//   const _PatchMethod() : super('patch');
-// }
-
-// class _All extends _HttpMethodModel {
-//   const _All() : super('all');
-// }
-
-// class _UnknownMethod extends _HttpMethodModel {
-//   const _UnknownMethod() : super('null');
-// }

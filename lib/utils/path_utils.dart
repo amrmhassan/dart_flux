@@ -1,8 +1,16 @@
 class PathUtils {
+  /// Checks if the [requestPath] matches the [handlerPath].
+  /// Supports exact matches, path parameters (e.g., `/user/:id`), and wildcards (`*`).
+  ///
+  /// - Wildcard `*` matches any path beyond that point.
+  /// - Path parameters like `:param` match any value at that segment.
+  ///
+  /// Returns `true` if the paths match, otherwise `false`.
   static bool pathMatches({
     required String requestPath,
     required String handlerPath,
   }) {
+    // Split both paths into segments (e.g., `/user/123` -> `['user', '123']`)
     List<String> requestSegments = requestPath.split('/');
     List<String> handlerSegments = handlerPath.split('/');
 
@@ -11,54 +19,59 @@ class PathUtils {
       String handlerSegment = handlerSegments[i];
       if (handlerSegment == '*') return true; // Matches anything
 
-      // If request has fewer segments than handler, it's not a match
+      // If the request path has fewer segments than the handler path, it's not a match
       if (i >= requestSegments.length) return false;
 
-      // Exact segment match or parameterized match `:param`
+      // Exact match or parameterized match `:param`
       String requestSegment = requestSegments[i];
       if (handlerSegment != requestSegment && !handlerSegment.startsWith(':')) {
-        return false;
+        return false; // Segment mismatch and no parameter
       }
     }
 
-    // If the request has more segments than handler, it's not a match
+    // Ensure the request path has the same number of segments as the handler path
     return requestSegments.length == handlerSegments.length;
   }
 
-  /// Extracts path parameters (e.g., `/user/:id` → `/user/123` returns `{id: 123}`)
+  /// Extracts path parameters from a [requestPath] based on the [handlerPath].
+  /// Example: `/user/:id` and `/user/123` -> `{id: '123'}`
+  ///
+  /// - Parameters are extracted from segments that start with `:`.
+  /// - Wildcard `*` captures all remaining segments.
   static Map<String, String> extractParams(
     String requestPath,
     String? handlerPath,
   ) {
-    if (handlerPath == null) return {};
+    if (handlerPath == null)
+      return {}; // Return empty map if handler path is null
 
-    // Split paths into segments
+    // Split both paths into segments
     List<String> requestSegments =
         requestPath.split('/').where((segment) => segment.isNotEmpty).toList();
     List<String> handlerSegments =
         handlerPath.split('/').where((segment) => segment.isNotEmpty).toList();
 
     Map<String, String> params = {};
-    bool catchAllStarted = false; // Flag to handle * wildcard
+    bool catchAllStarted = false; // Flag to handle wildcard "*"
 
     for (int i = 0; i < handlerSegments.length; i++) {
       if (handlerSegments[i].startsWith(':')) {
-        // Extract parameter name
+        // Extract parameter name (e.g., :id -> id)
         String paramName = handlerSegments[i].substring(1); // Remove ':'
         if (i < requestSegments.length) {
-          params[paramName] = requestSegments[i];
+          params[paramName] = requestSegments[i]; // Map the value
         }
       } else if (handlerSegments[i] == '*') {
-        // Handle the wildcard "*" by capturing the rest of the path
+        // Handle the wildcard "*" which captures all remaining segments
         catchAllStarted = true;
         params['*'] = requestSegments
-            .sublist(i)
-            .join('/'); // Join the remaining path segments
-        break; // No need to continue once we've captured the rest of the path
+            .sublist(i) // Capture all remaining segments
+            .join('/'); // Join them as a single string
+        break; // No need to process further, the rest of the path is captured
       }
     }
 
-    // If catch-all is started but no wildcard was found, capture all remaining path parts
+    // If no wildcard was found but the request has extra segments, capture them
     if (!catchAllStarted && requestSegments.length > handlerSegments.length) {
       params['*'] = requestSegments.sublist(handlerSegments.length).join('/');
     }
@@ -66,9 +79,14 @@ class PathUtils {
     return params;
   }
 
+  /// Combines [basePath] and [entityPath] into a final path.
+  /// If either is null, it returns the other. If both are null, it returns null.
+  /// Example:
+  /// - `basePath = '/api'`, `entityPath = '/user'` -> `/api/user`
   static String? finalPath(String? basePath, String? entityPath) {
     return entityPath == null && basePath == null
-        ? null
-        : (basePath ?? '') + (entityPath ?? '');
+        ? null // Return null if both paths are null
+        : (basePath ?? '') +
+            (entityPath ?? ''); // Concatenate base and entity paths
   }
 }

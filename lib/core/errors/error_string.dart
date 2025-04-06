@@ -1,16 +1,20 @@
 import 'dart:io';
 
+/// Global instances to access error strings and codes across the project.
 ErrorString errorString = ErrorString();
 ErrorCode errorCode = ErrorCode();
 
+/// Contains descriptive human-readable error messages for various types of request body errors.
+/// Use these when showing error details in API responses or logs.
 class ErrorString {
-  // invalid body
+  // Errors related to invalid request body types
   String invalidJsonBody = 'body content is not valid as json';
   String invalidStringBody = 'body content is not valid as string';
   String invalidBytesBody = 'body content is not valid as bytes';
   String invalidFormBody = 'body content is not valid as a form';
   String invalidFileBody = 'body content is not valid as a file';
-  // invalid part of body
+
+  // Errors related to request constraints or unexpected inputs
   String filesNotAllowedInForm = 'files aren\'t accepted in this form';
   String largeRequestSize = 'Request size exceeded';
   String unknownRequestSize =
@@ -18,6 +22,8 @@ class ErrorString {
   String fileAlreadyExists = 'File already exists';
 }
 
+/// Provides corresponding error codes for each error defined in [ErrorString].
+/// These codes are useful for consistent machine-readable error reporting in APIs.
 class ErrorCode implements ErrorString {
   @override
   String filesNotAllowedInForm = 'files-not-allowed-in-form';

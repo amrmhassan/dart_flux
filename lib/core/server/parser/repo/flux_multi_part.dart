@@ -15,12 +15,24 @@ import 'package:dart_flux/core/server/parser/models/text_form_field.dart';
 import 'package:dart_flux/extensions/string_utils.dart';
 import 'package:mime/mime.dart';
 
+/// Class responsible for handling multipart form data in HTTP requests.
+/// It implements [MultiPartInterface] and provides functionality to
+/// read and parse form data, including text and files from incoming
+/// HTTP requests.
 class FluxMultiPart implements MultiPartInterface {
   @override
   HttpRequest request;
 
+  /// Constructor for creating an instance of [FluxMultiPart].
+  /// [request]: The HTTP request to handle multipart data.
   FluxMultiPart(this.request);
 
+  /// Reads and parses the form data from the HTTP request.
+  ///
+  /// It processes both text and file data from the multipart request.
+  /// - [saveFolder]: The folder where uploaded files will be saved.
+  /// - [acceptFormFiles]: A flag to specify if files should be accepted in the form.
+  /// Returns [FormData] containing the parsed text fields and files.
   @override
   Future<FormData> readForm({
     required String saveFolder,
@@ -34,28 +46,30 @@ class FluxMultiPart implements MultiPartInterface {
         contentType!.parameters['boundary']!,
       );
       final parts = await transformer.bind(request).toList();
+
       for (var part in parts) {
         var broadCast = part.asBroadcastStream();
         final disposition = part.headers[HttpHeaders.contentDisposition];
         String? name = _getDispositionKey(disposition);
         var contentType = part.headers[HttpHeaders.contentTypeHeader] ?? 'text';
+
         if (contentType.startsWith('text')) {
-          // this is a text
+          // If the content is text, process it as a text field.
           var res = await utf8.decoder.bind(part).join();
           TextFormField result = TextFormField(name, res);
           fields.add(result);
         } else {
+          // If the content is a file, process it as a file field.
           String? fileName = _extractFileName(disposition);
           if (!acceptFormFiles) {
             throw ServerError(
               errorString.filesNotAllowedInForm,
               status: HttpStatus.badRequest,
-
               trace: StackTrace.current,
               code: errorCode.filesNotAllowedInForm,
             );
           }
-          // this should be a stream of a file
+          // Save the file to the specified folder.
           var filePath = await _savePartToFile(
             broadCast,
             contentType,
@@ -66,8 +80,7 @@ class FluxMultiPart implements MultiPartInterface {
           files.add(result);
         }
       }
-      FormData formData = FormData(fields: fields, files: files);
-      return formData;
+      return FormData(fields: fields, files: files);
     } catch (e, s) {
       throw ServerError.fromCatch(
         msg: errorString.invalidFormBody,
@@ -79,6 +92,10 @@ class FluxMultiPart implements MultiPartInterface {
     }
   }
 
+  /// Extracts the key (name) from the content disposition header.
+  ///
+  /// [disposition]: The content disposition header to extract the key from.
+  /// Returns the extracted key or null if not found.
   String? _getDispositionKey(String? disposition) {
     if (disposition != null) {
       final fileNameMatch = RegExp(
@@ -91,18 +108,22 @@ class FluxMultiPart implements MultiPartInterface {
     return null;
   }
 
+  /// Extracts the file name from the content disposition header.
+  ///
+  /// [disposition]: The content disposition header to extract the file name from.
+  /// Returns the extracted file name or null if not found.
   String? _extractFileName(String? disposition) {
     if (disposition == null) return null;
     final regex = RegExp(r'filename="([^"]+)"');
     final match = regex.firstMatch(disposition);
 
-    if (match != null) {
-      return match.group(1);
-    } else {
-      return null;
-    }
+    return match?.group(1);
   }
 
+  /// Reads and parses form data as byte streams from the HTTP request.
+  ///
+  /// - [acceptFormFiles]: A flag to specify if files should be accepted in the form.
+  /// Returns [BytesFormData] containing the parsed text fields and files as byte arrays.
   @override
   Future<BytesFormData> readFormBytes({bool acceptFormFiles = true}) async {
     try {
@@ -115,18 +136,20 @@ class FluxMultiPart implements MultiPartInterface {
       }
       var transformer = MimeMultipartTransformer(boundary);
       final parts = await transformer.bind(request).toList();
+
       for (var part in parts) {
         var broadCast = part.asBroadcastStream();
         final disposition = part.headers[HttpHeaders.contentDisposition];
         String? name = _getDispositionKey(disposition);
         var contentType = part.headers[HttpHeaders.contentTypeHeader] ?? 'text';
+
         if (contentType.startsWith('text')) {
-          // this is a text
+          // If the content is text, process it as a text field.
           var res = await utf8.decoder.bind(part).join();
           TextFormField result = TextFormField(name, res);
           fields.add(result);
         } else {
-          // this should be a stream of a file
+          // If the content is a file, process it as a file field.
           if (!acceptFormFiles) {
             throw ServerError(
               errorString.filesNotAllowedInForm,
@@ -135,13 +158,13 @@ class FluxMultiPart implements MultiPartInterface {
               code: errorCode.filesNotAllowedInForm,
             );
           }
+          // Convert the file part to bytes and save it.
           var filePath = await _partToBytes(broadCast, contentType);
           BytesFormField result = BytesFormField(name, filePath);
           files.add(result);
         }
       }
-      BytesFormData form = BytesFormData(fields: fields, files: files);
-      return form;
+      return BytesFormData(fields: fields, files: files);
     } catch (e, s) {
       throw ServerError.fromCatch(
         msg: errorString.invalidFormBody,
@@ -153,6 +176,13 @@ class FluxMultiPart implements MultiPartInterface {
     }
   }
 
+  /// Saves the content of a file part to a file in the specified folder.
+  ///
+  /// [part]: The stream of data representing the file content.
+  /// [contentType]: The content type of the file.
+  /// [saveFolder]: The folder where the file will be saved.
+  /// [fileNameOrg]: The original file name (if available).
+  /// Returns the file path where the file was saved.
   Future<String> _savePartToFile(
     Stream<List<int>> part,
     String contentType,
@@ -188,6 +218,11 @@ class FluxMultiPart implements MultiPartInterface {
     return completer.future;
   }
 
+  /// Converts the file part to a list of bytes.
+  ///
+  /// [part]: The stream of data representing the file content.
+  /// [contentType]: The content type of the file.
+  /// Returns the list of bytes representing the file.
   Future<List<int>> _partToBytes(
     Stream<List<int>> part,
     String contentType,
@@ -209,6 +244,12 @@ class FluxMultiPart implements MultiPartInterface {
     return completer.future;
   }
 
+  /// Receives a file from the HTTP request and saves it to the specified path.
+  ///
+  /// [path]: The path where the file will be saved.
+  /// [throwErrorIfExist]: Whether to throw an error if the file already exists.
+  /// [overrideIfExist]: Whether to override the file if it already exists.
+  /// Returns the [File] that was saved.
   @override
   Future<File> receiveFile({
     required String path,
@@ -217,9 +258,10 @@ class FluxMultiPart implements MultiPartInterface {
   }) async {
     try {
       var completer = Completer<File>();
-
       File file = File(path);
       bool fileExists = file.existsSync();
+
+      // Handle file existence and behavior based on flags
       if (fileExists && throwErrorIfExist) {
         throw FileExistsError();
       } else if (fileExists && !overrideIfExist) {
@@ -227,6 +269,7 @@ class FluxMultiPart implements MultiPartInterface {
       } else if (fileExists) {
         file.deleteSync();
       }
+
       file.createSync(recursive: true);
       var raf = await file.open(mode: FileMode.write);
 
