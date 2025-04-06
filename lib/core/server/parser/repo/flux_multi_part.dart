@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/errors/error_string.dart';
-import 'package:dart_flux/core/errors/file_exists_error.dart';
+import 'package:dart_flux/core/errors/types/file_exists_error.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/parser/interface/multi_part_interface.dart';
 import 'package:dart_flux/core/server/parser/models/bytes_form_data.dart';

@@ -15,6 +15,7 @@ class ErrorString {
   String largeRequestSize = 'Request size exceeded';
   String unknownRequestSize =
       'Request size is unknown, please set ${HttpHeaders.contentLengthHeader} header';
+  String fileAlreadyExists = 'File already exists';
 }
 
 class ErrorCode implements ErrorString {
@@ -41,4 +42,7 @@ class ErrorCode implements ErrorString {
 
   @override
   String unknownRequestSize = 'unknown-request-size';
+
+  @override
+  String fileAlreadyExists = 'file-already-exists';
 }
