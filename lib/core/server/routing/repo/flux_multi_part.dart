@@ -8,8 +8,10 @@ import 'package:dart_flux/core/errors/file_exists_error.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/multi_part_interface.dart';
 import 'package:dart_flux/core/server/routing/models/bytes_form_data.dart';
+import 'package:dart_flux/core/server/routing/models/bytes_form_field.dart';
+import 'package:dart_flux/core/server/routing/models/file_form_field.dart';
 import 'package:dart_flux/core/server/routing/models/form_data.dart';
-import 'package:dart_flux/core/server/routing/models/form_field.dart';
+import 'package:dart_flux/core/server/routing/models/text_form_field.dart';
 import 'package:dart_flux/extensions/string_utils.dart';
 import 'package:mime/mime.dart';
 

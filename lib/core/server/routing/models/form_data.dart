@@ -3,7 +3,8 @@ import 'dart:io';
 
 import 'package:dart_flux/core/server/routing/interface/form_data_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/form_field_interface.dart';
-import 'package:dart_flux/core/server/routing/models/form_field.dart';
+import 'package:dart_flux/core/server/routing/models/file_form_field.dart';
+import 'package:dart_flux/core/server/routing/models/text_form_field.dart';
 
 class FormData extends FormDataInterface {
   final List<TextFormField> fields;
