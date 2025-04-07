@@ -15,16 +15,16 @@ void main() {
     Router router = Router()
         .get(
           '/user/welcome/:id',
-          Processors.welcomeID,
+          TestProcessors.welcomeID,
           signature: 'get the 3rd params',
         )
         .get(
           '/user/:userName',
-          Processors.userName,
+          TestProcessors.userName,
           signature: 'get the 2rd params',
         )
-        .get('/:path', Processors.path, signature: 'get 1st param')
-        .get('/*', Processors.wildcard, signature: 'get wildcard');
+        .get('/:path', TestProcessors.path, signature: 'get 1st param')
+        .get('/*', TestProcessors.wildcard, signature: 'get wildcard');
     server = Server(InternetAddress.anyIPv4, 0, router, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);

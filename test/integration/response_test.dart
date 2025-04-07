@@ -13,16 +13,16 @@ void main() {
 
   setUpAll(() async {
     Router router = Router()
-        .post('/badRequest', Processors.badRequest)
-        .post('/binary', Processors.binary)
-        .post('/data', Processors.data)
-        .post('/error', Processors.error)
-        .post('/file', Processors.file)
-        .post('/html', Processors.html)
-        .post('/json', Processors.jsonProcessor)
-        .post('/notfound', Processors.notfound)
-        .post('/unauthorized', Processors.unauthorized)
-        .post('/stream', Processors.stream);
+        .post('/badRequest', TestProcessors.badRequest)
+        .post('/binary', TestProcessors.binary)
+        .post('/data', TestProcessors.data)
+        .post('/error', TestProcessors.error)
+        .post('/file', TestProcessors.file)
+        .post('/html', TestProcessors.html)
+        .post('/json', TestProcessors.jsonProcessor)
+        .post('/notfound', TestProcessors.notfound)
+        .post('/unauthorized', TestProcessors.unauthorized)
+        .post('/stream', TestProcessors.stream);
     server = Server(InternetAddress.anyIPv4, 0, router, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);

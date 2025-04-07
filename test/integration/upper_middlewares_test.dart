@@ -18,26 +18,26 @@ void main() {
     Middleware upperMiddleware = Middleware(
       '/upperMiddleware',
       HttpMethod.get,
-      Processors.upperMiddleware,
+      TestProcessors.upperMiddleware,
     );
     LowerMiddleware lowerMiddleware = LowerMiddleware(
       '/lowerMiddleware',
       HttpMethod.get,
-      Processors.lowerMiddleware,
+      TestProcessors.lowerMiddleware,
       signature: '.lowerMiddleware',
     );
 
     Router router = Router()
         .upperMiddleware(upperMiddleware)
-        .upper(Processors.upper)
-        .get('/upper', Processors.unauthorized)
-        .get('/upperMiddleware', Processors.unauthorized);
+        .upper(TestProcessors.upper)
+        .get('/upper', TestProcessors.unauthorized)
+        .get('/upperMiddleware', TestProcessors.unauthorized);
 
     Router parent = Router()
-        .lower(Processors.lower, signature: '.lower')
+        .lower(TestProcessors.lower, signature: '.lower')
         .lowerMiddleware(lowerMiddleware)
         .router(router)
-        .get('/lowerMiddleware', Processors.lowerMiddlewareHandler);
+        .get('/lowerMiddleware', TestProcessors.lowerMiddlewareHandler);
     server = Server(InternetAddress.anyIPv4, 0, parent, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);

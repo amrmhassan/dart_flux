@@ -15,12 +15,12 @@ void main() {
 
   setUpAll(() async {
     Router router = Router()
-        .post('/user', Processors.jsonBody)
-        .post('/userForm', Processors.bytesFormBodyNoFiles)
-        .post('/userFormWithFile', Processors.bytesFormBodyWithFiles)
-        .post('/userFilesForm', Processors.bytesFormBodyNoFiles)
-        .post('/userFilesFormWithFile', Processors.filesFormBodyWithFiles)
-        .post('/file', Processors.receiveFile);
+        .post('/user', TestProcessors.jsonBody)
+        .post('/userForm', TestProcessors.bytesFormBodyNoFiles)
+        .post('/userFormWithFile', TestProcessors.bytesFormBodyWithFiles)
+        .post('/userFilesForm', TestProcessors.bytesFormBodyNoFiles)
+        .post('/userFilesFormWithFile', TestProcessors.filesFormBodyWithFiles)
+        .post('/file', TestProcessors.receiveFile);
     server = Server(InternetAddress.anyIPv4, 0, router, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);

@@ -14,15 +14,15 @@ void main() {
 
   setUpAll(() async {
     Router router = Router()
-        .get(Endpoint.test, Processors.done)
-        .post(Endpoint.test, Processors.done)
-        .put(Endpoint.test, Processors.done)
-        .delete(Endpoint.test, Processors.done)
-        .head(Endpoint.test, Processors.done)
-        .connect(Endpoint.test, Processors.done)
-        .options(Endpoint.test, Processors.done)
-        .trace(Endpoint.test, Processors.done)
-        .patch(Endpoint.test, Processors.done);
+        .get(Endpoint.test, TestProcessors.done)
+        .post(Endpoint.test, TestProcessors.done)
+        .put(Endpoint.test, TestProcessors.done)
+        .delete(Endpoint.test, TestProcessors.done)
+        .head(Endpoint.test, TestProcessors.done)
+        .connect(Endpoint.test, TestProcessors.done)
+        .options(Endpoint.test, TestProcessors.done)
+        .trace(Endpoint.test, TestProcessors.done)
+        .patch(Endpoint.test, TestProcessors.done);
     server = Server(InternetAddress.anyIPv4, 0, router, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);

@@ -5,7 +5,7 @@ import 'package:dart_flux/core/server/utils/send_response.dart';
 
 import '../../helper/file_helper.dart';
 
-class Processors {
+class TestProcessors {
   static ProcessorHandler done = (request, response, pathArgs) {
     return SendResponse.data(response, 'done ${request.method.name}');
   };
@@ -191,5 +191,23 @@ class Processors {
       'file1': file.path,
       'file2': file2.path,
     });
+  };
+}
+
+class TestUserProcessors {
+  static ProcessorHandler allUsers = (request, response, pathArgs) async {
+    return SendResponse.data(response, 'all users');
+  };
+  static ProcessorHandler userData = (request, response, pathArgs) async {
+    return SendResponse.data(response, 'user ${pathArgs['id']}');
+  };
+}
+
+class TestPostsProcessors {
+  static ProcessorHandler allPosts = (request, response, pathArgs) async {
+    return SendResponse.data(response, 'all posts');
+  };
+  static ProcessorHandler postData = (request, response, pathArgs) async {
+    return SendResponse.data(response, 'post ${pathArgs['id']}');
   };
 }
