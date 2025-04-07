@@ -87,22 +87,17 @@ abstract class RouterBase extends BasePath implements RequestProcessor {
 
     // Iterate over the pipeline to extract valid processors
     for (var requestProcessor in pipeLine) {
-      // Ensure that a handler is the last processor in the pipeline
-      if ((requestProcessor is Handler || requestProcessor is Router) &&
-          foundHandler) {
-        continue;
-      }
-
       var entityProcessors = requestProcessor.processors(path, method);
       if (entityProcessors.isEmpty) continue;
 
-      // If it's a handler or router, mark that we've found a handler
-      if (requestProcessor is Handler || requestProcessor is Router) {
-        foundHandler = true;
-      }
-
       // Add valid processors to the main list
       mainProcessors.addAll(entityProcessors);
+
+      // If it's a handler or router, mark that we've found a handler
+      if (requestProcessor is Handler ||
+          requestProcessor is Router && handlerIsAMust) {
+        return mainProcessors;
+      }
     }
 
     // If a handler is required but not found, return an empty list
