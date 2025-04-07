@@ -130,7 +130,14 @@ class PipelineRunner {
       late HttpEntity output;
 
       for (var entity in entities) {
-        output = await entity.processor(_request, _response, _params(entity));
+        // if res is HttpEntity then the entity is a handler or a middleware
+        // else if it is null then the entity is a lower middleware
+        var res = await entity.processor(_request, _response, _params(entity));
+        if (res is HttpEntity) {
+          output = res;
+        } else {
+          continue;
+        }
 
         if (output is FluxRequest) {
           _request = output;

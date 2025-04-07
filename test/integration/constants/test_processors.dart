@@ -152,11 +152,44 @@ class Processors {
     response.headers.add('upper', 'true');
     return SendResponse.data(response, 'upperMiddleware');
   };
-  static LowerProcessor lowerMiddleware =
-      (request, response, pathArgs) async {};
+  static LowerProcessor lowerMiddleware = (request, response, pathArgs) async {
+    String filePath = request.context.get('filePath');
+    File file = File(filePath);
+    if (!file.existsSync()) {
+      print('file doesn\'t exist');
+      return;
+    }
+    file.deleteSync();
+  };
+  static LowerProcessor lower = (request, response, pathArgs) async {
+    String filePath = request.context.get('filePath2');
+    File file = File(filePath);
+    if (!file.existsSync()) {
+      print('file2 doesn\'t exist');
+      return;
+    }
+    file.deleteSync();
+  };
 
   static ProcessorHandler upper = (request, response, pathArgs) async {
     response.headers.add('upper', 'true');
     return SendResponse.data(response, 'upper');
+  };
+  static ProcessorHandler lowerMiddlewareHandler = (
+    request,
+    response,
+    pathArgs,
+  ) async {
+    FileHelper helper = FileHelper(fileName: 'lowerMiddleware.bin');
+    FileHelper helper2 = FileHelper(fileName: 'lower.bin');
+    var file = await helper.create();
+    var file2 = await helper2.create();
+    request.context.add('filePath', file.path);
+    request.context.add('filePath2', file2.path);
+
+    return SendResponse.json(response, {
+      'file1': file.path,
+      'file2': file2.path,
+    });
   };
 }

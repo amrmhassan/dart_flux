@@ -122,8 +122,10 @@ class Router extends RouterBase {
   }
 
   /// Adds a middleware to the lower pipeline of the router using a processor function.
-  Router lower(LowerProcessor processor) {
-    return lowerMiddleware(LowerMiddleware(null, null, processor));
+  Router lower(LowerProcessor processor, {String? signature}) {
+    return lowerMiddleware(
+      LowerMiddleware(null, null, processor, signature: signature),
+    );
   }
 
   //? fast inserting handlers

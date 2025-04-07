@@ -24,6 +24,7 @@ void main() {
       '/lowerMiddleware',
       HttpMethod.get,
       Processors.lowerMiddleware,
+      signature: '.lowerMiddleware',
     );
 
     Router router = Router()
@@ -33,9 +34,10 @@ void main() {
         .get('/upperMiddleware', Processors.unauthorized);
 
     Router parent = Router()
+        .lower(Processors.lower, signature: '.lower')
         .lowerMiddleware(lowerMiddleware)
         .router(router)
-        .get('/lowerMiddleware', Processors.unauthorized);
+        .get('/lowerMiddleware', Processors.lowerMiddlewareHandler);
     server = Server(InternetAddress.anyIPv4, 0, parent, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);
@@ -43,7 +45,7 @@ void main() {
   tearDownAll(() async {
     await server.close();
   });
-  group('Upper middlewares', () {
+  group('Router Upper middlewares', () {
     test('upperMiddleware method', () async {
       var res = await dio.get('/upperMiddleware');
       expect(res.data, 'upperMiddleware');
@@ -61,10 +63,16 @@ void main() {
       expect(res.data['msg'], 'request path not found');
       expect(res.statusCode, HttpStatus.notFound);
     });
+  });
+  group('Router lower middlewares', () {
     test('lowerMiddleware method', () async {
       var res = await dio.get('/lowerMiddleware');
-      expect(res.data['msg'], 'unauthorized');
-      expect(res.statusCode, HttpStatus.unauthorized);
+      var file1 = File(res.data['file1'] as String).existsSync();
+      var file2 = File(res.data['file2'] as String).existsSync();
+
+      expect(file1, false);
+      expect(file2, false);
+      expect(res.statusCode, HttpStatus.ok);
     });
   });
 }
