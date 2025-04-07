@@ -21,12 +21,12 @@ class RequestReader implements RequestReaderInterface {
       return jsonBody;
     } catch (e, s) {
       // Catches any errors during JSON decoding and wraps them in a ServerError.
-      throw ServerError.fromCatch(
-        msg: errorString.invalidJsonBody,
-        status: HttpStatus.badRequest,
-        e: e,
-        s: s,
+      throw ServerError(
+        errorString.invalidJsonBody,
+        trace: s,
+        description: e,
         code: errorCode.invalidJsonBody,
+        status: HttpStatus.badRequest,
       );
     }
   }
@@ -49,7 +49,7 @@ class RequestReader implements RequestReaderInterface {
       if (!allowedMimes.any((element) => element == mimeType)) {
         throw ServerError(
           errorString.invalidStringBody,
-          status: HttpStatus.unsupportedMediaType,
+          status: HttpStatus.badRequest,
         );
       }
 

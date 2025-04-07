@@ -105,55 +105,101 @@ class Router extends RouterBase {
   Router _addFastMethod(
     String path,
     HttpMethod method,
-    ProcessorHandler processor,
-  ) {
-    Handler h = Handler(path, method, processor);
+    ProcessorHandler processor, {
+    String? signature,
+  }) {
+    Handler h = Handler(path, method, processor, signature: signature);
     h.basePathTemplate = basePath;
     return handler(h);
   }
 
   /// Adds a GET request handler to the router.
-  Router get(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.get, processor);
+  Router get(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.get,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds a POST request handler to the router.
-  Router post(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.post, processor);
+  Router post(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.post,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds a PUT request handler to the router.
-  Router put(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.put, processor);
+  Router put(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.put,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds a DELETE request handler to the router.
-  Router delete(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.delete, processor);
+  Router delete(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.delete,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds a HEAD request handler to the router.
-  Router head(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.head, processor);
+  Router head(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.head,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds a CONNECT request handler to the router.
-  Router connect(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.connect, processor);
+  Router connect(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.connect,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds an OPTIONS request handler to the router.
-  Router options(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.options, processor);
+  Router options(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.options,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds a TRACE request handler to the router.
-  Router trace(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.trace, processor);
+  Router trace(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.trace,
+      processor,
+      signature: signature,
+    );
   }
 
   /// Adds a PATCH request handler to the router.
-  Router patch(String path, ProcessorHandler processor) {
-    return _addFastMethod(path, HttpMethod.patch, processor);
+  Router patch(String path, ProcessorHandler processor, {String? signature}) {
+    return _addFastMethod(
+      path,
+      HttpMethod.patch,
+      processor,
+      signature: signature,
+    );
   }
 }

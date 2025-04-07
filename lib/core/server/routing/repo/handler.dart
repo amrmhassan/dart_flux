@@ -6,7 +6,7 @@ import 'package:dart_flux/core/server/routing/models/processor.dart';
 /// to the upper and lower pipelines of a request handler.
 class Handler extends HandlerBase {
   /// Constructor for initializing a handler with a path template, HTTP method, and processor.
-  Handler(super.pathTemplate, super.method, super.processor);
+  Handler(super.pathTemplate, super.method, super.processor, {super.signature});
 
   /// Adds middleware to the upper pipeline of the handler.
   ///
