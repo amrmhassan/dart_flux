@@ -1,6 +1,7 @@
 import 'package:dart_flux/core/server/routing/interface/model_repository_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/routing/models/router_base.dart';
@@ -14,7 +15,7 @@ class Router extends RouterBase {
   Router({
     List<Middleware>? upperPipeline,
     List<RequestProcessor>? mainPipeline,
-    List<Middleware>? lowerPipeline,
+    List<LowerMiddleware>? lowerPipeline,
   }) : super(
          upperPipeline: upperPipeline,
          mainPipeline: mainPipeline,
@@ -51,7 +52,7 @@ class Router extends RouterBase {
     upperPipeline.add(middleware);
   }
 
-  void _addLowerMiddleware(Middleware middleware) {
+  void _addLowerMiddleware(LowerMiddleware middleware) {
     middleware.parent = this;
     lowerPipeline.add(middleware);
   }
@@ -115,14 +116,14 @@ class Router extends RouterBase {
   ///
   /// This middleware will be executed after all other middlewares and handlers in the
   /// router's pipeline, which is useful for tasks such as final logging or cleanup.
-  Router lowerMiddleware(Middleware middleware) {
+  Router lowerMiddleware(LowerMiddleware middleware) {
     _addLowerMiddleware(middleware);
     return this;
   }
 
   /// Adds a middleware to the lower pipeline of the router using a processor function.
-  Router lower(Processor processor) {
-    return lowerMiddleware(Middleware(null, null, processor));
+  Router lower(LowerProcessor processor) {
+    return lowerMiddleware(LowerMiddleware(null, null, processor));
   }
 
   //? fast inserting handlers

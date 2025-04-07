@@ -7,6 +7,7 @@ import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
@@ -20,11 +21,11 @@ import 'package:dart_flux/utils/path_utils.dart';
 class PipelineRunner {
   // System-level middlewares that run before and after everything else.
   final List<Middleware> _systemUpper;
-  final List<Middleware> _systemLower;
+  final List<LowerMiddleware> _systemLower;
 
   // Custom middlewares added at the server level.
   final List<Middleware> _upperMiddlewares;
-  final List<Middleware> _lowerMiddlewares;
+  final List<LowerMiddleware> _lowerMiddlewares;
 
   // Current HTTP request and response objects.
   FluxRequest _request;
@@ -41,9 +42,9 @@ class PipelineRunner {
 
   PipelineRunner({
     required List<Middleware> systemUpper,
-    required List<Middleware> systemLower,
+    required List<LowerMiddleware> systemLower,
     required List<Middleware> upperMiddlewares,
-    required List<Middleware> lowerMiddlewares,
+    required List<LowerMiddleware> lowerMiddlewares,
     required FluxRequest request,
     required FluxResponse response,
     required List<RoutingEntity> entities,
@@ -108,6 +109,16 @@ class PipelineRunner {
       return output ?? _request;
     } catch (e, s) {
       return _error(e, s);
+    }
+  }
+
+  Future<void> _runLowerMiddlewares(List<LowerMiddleware> middlewares) async {
+    try {
+      for (var middleware in middlewares) {
+        await middleware.processor(_request, _response, _params(middleware));
+      }
+    } catch (e) {
+      return fluxLogger?.rawLog(e);
     }
   }
 
@@ -183,11 +194,9 @@ class PipelineRunner {
         _responseClosed = true;
       }
 
-      HttpEntity lower = await _runMiddlewares(_lowerMiddlewares);
-      _newEntity(lower);
+      await _runLowerMiddlewares(_lowerMiddlewares);
 
-      HttpEntity systemLower = await _runMiddlewares(_systemLower);
-      _newEntity(systemLower);
+      await _runLowerMiddlewares(_systemLower);
     } catch (e, s) {
       _response = await _error(e, s);
     }

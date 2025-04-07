@@ -5,6 +5,7 @@ import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.
 import 'package:dart_flux/core/server/execution/interface/server_interface.dart';
 import 'package:dart_flux/core/server/execution/repo/flux_logger.dart';
 import 'package:dart_flux/core/server/execution/repo/pipeline_runner.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/utils/server_utils.dart';
 import 'package:dart_flux/core/server/middlewares/request_logger_middleware.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
@@ -23,7 +24,7 @@ class Server implements ServerInterface {
 
   /// List of middlewares to be executed after the main processing.
   @override
-  List<Middleware>? lowerMiddlewares;
+  List<LowerMiddleware>? lowerMiddlewares;
 
   /// The port on which the server will listen for incoming requests.
   @override
@@ -80,7 +81,7 @@ class Server implements ServerInterface {
 
   /// Private lists to manage system-level middlewares (upper and lower).
   List<Middleware> _systemUpper = [];
-  List<Middleware> _systemLower = [];
+  List<LowerMiddleware> _systemLower = [];
 
   /// Adds the logger middlewares if logging is enabled.
   ///

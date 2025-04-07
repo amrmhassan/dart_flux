@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 
@@ -25,7 +26,7 @@ abstract class ServerInterface {
 
   /// Middleware executed *after* the main request processor.
   /// Useful for response formatting, error handling, or analytics.
-  late List<Middleware>? lowerMiddlewares;
+  late List<LowerMiddleware>? lowerMiddlewares;
 
   /// The actual Dart [HttpServer] instance managing connections and HTTP requests.
   HttpServer get server;

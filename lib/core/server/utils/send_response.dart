@@ -102,7 +102,7 @@ class SendResponse {
 
   static Future<FluxResponse> helloWold(FluxResponse response) {
     // Convert the data to JSON and send it in the response.
-    return _write(response, 'Hello world', HttpStatus.ok);
+    return _write(response, 'Hello World', HttpStatus.ok);
   }
 
   /// A method to send an HTML response.

@@ -23,12 +23,7 @@ void main() {
         .options(Endpoint.test, Processors.done)
         .trace(Endpoint.test, Processors.done)
         .patch(Endpoint.test, Processors.done);
-    server = Server(
-      InternetAddress.anyIPv4,
-      3000,
-      router,
-      loggerEnabled: false,
-    );
+    server = Server(InternetAddress.anyIPv4, 0, router, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);
   });

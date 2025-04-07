@@ -144,4 +144,19 @@ class Processors {
     await file.delete();
     return res;
   };
+  static ProcessorHandler upperMiddleware = (
+    request,
+    response,
+    pathArgs,
+  ) async {
+    response.headers.add('upper', 'true');
+    return SendResponse.data(response, 'upperMiddleware');
+  };
+  static LowerProcessor lowerMiddleware =
+      (request, response, pathArgs) async {};
+
+  static ProcessorHandler upper = (request, response, pathArgs) async {
+    response.headers.add('upper', 'true');
+    return SendResponse.data(response, 'upper');
+  };
 }

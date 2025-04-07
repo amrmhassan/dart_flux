@@ -37,3 +37,15 @@ typedef ProcessorHandler =
       /// - pathArgs: `{'user_id': 159876663}`
       Map<String, dynamic> pathArgs,
     );
+typedef LowerProcessor =
+    FutureOr<void> Function(
+      FluxRequest request,
+      FluxResponse response,
+
+      /// A map of path arguments extracted from the request path.
+      /// Example usage:
+      /// - Path template: `/users/:user_id/getInfo`
+      /// - Request path: `/users/159876663/getInfo`
+      /// - pathArgs: `{'user_id': 159876663}`
+      Map<String, dynamic> pathArgs,
+    );

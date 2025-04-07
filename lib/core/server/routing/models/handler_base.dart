@@ -1,6 +1,7 @@
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 
@@ -24,7 +25,7 @@ abstract class HandlerBase extends RoutingEntity implements RequestProcessor {
   List<Middleware> middlewares = [];
 
   /// A list of middlewares that will run after the handler.
-  List<Middleware> lowerMiddleware = [];
+  List<LowerMiddleware> lowerMiddleware = [];
 
   /// Returns a list of processors (middlewares and this handler) that should process the request.
   /// Filters the middlewares based on the current path and method, and checks if this handler should be executed.

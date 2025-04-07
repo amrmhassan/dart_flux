@@ -1,4 +1,5 @@
 import 'package:dart_flux/core/server/routing/models/handler_base.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 
@@ -25,8 +26,8 @@ class Handler extends HandlerBase {
   /// This method adds a middleware to the lower pipeline (lowerMiddlewares)
   /// for the handler. It ensures that the middleware is associated with the
   /// correct base path template.
-  Handler lower(Processor processor) {
-    var middleware = Middleware(pathTemplate, method, processor);
+  Handler lower(LowerProcessor processor) {
+    var middleware = LowerMiddleware(pathTemplate, method, processor);
     middleware.parent = this;
     lowerMiddleware.add(middleware);
     return this;

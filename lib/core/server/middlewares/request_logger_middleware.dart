@@ -1,6 +1,7 @@
 import 'package:dart_flux/constants/date_constants.dart';
 import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/execution/repo/flux_request_logger_saver.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 
 /// `RequestLoggerMiddleware` provides middlewares for logging request
@@ -30,7 +31,7 @@ class RequestLoggerMiddleware {
   ///
   /// The hit and left times are used to measure the duration of the request lifecycle.
   /// If a logger is present, the request and response details are logged using `FluxRequestLoggerSaver`.
-  static Middleware lower = Middleware(null, null, (
+  static LowerMiddleware lower = LowerMiddleware(null, null, (
     request,
     response,
     pathArgs,
@@ -55,7 +56,5 @@ class RequestLoggerMiddleware {
       request: request,
       response: response,
     ).log();
-
-    return request;
   }, signature: 'adding left time and logging middleware');
 }

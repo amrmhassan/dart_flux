@@ -4,6 +4,7 @@ import 'package:dart_flux/core/server/routing/interface/base_path.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
+import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/repo/handler.dart';
 import 'package:dart_flux/core/server/routing/repo/router.dart';
@@ -27,13 +28,13 @@ abstract class RouterBase extends BasePath implements RequestProcessor {
   List<RequestProcessor> mainPipeline = [];
 
   // Pipeline for middlewares that run after the main processing
-  List<Middleware> lowerPipeline = [];
+  List<LowerMiddleware> lowerPipeline = [];
 
   /// Constructor that initializes the router with optional pipelines.
   RouterBase({
     List<Middleware>? upperPipeline,
     List<RequestProcessor>? mainPipeline,
-    List<Middleware>? lowerPipeline,
+    List<LowerMiddleware>? lowerPipeline,
   }) : upperPipeline = upperPipeline ?? [],
        mainPipeline = mainPipeline ?? [],
        lowerPipeline = lowerPipeline ?? [];
