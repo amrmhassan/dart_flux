@@ -15,7 +15,7 @@ class Handler extends HandlerBase {
   /// with the handler's path template and method.
   Handler middleware(Processor processor) {
     var middleware = Middleware(pathTemplate, method, processor);
-    middleware.basePathTemplate = basePathTemplate;
+    middleware.parent = this;
     middlewares.add(middleware);
     return this;
   }
@@ -25,8 +25,9 @@ class Handler extends HandlerBase {
   /// This method adds a middleware to the lower pipeline (lowerMiddlewares)
   /// for the handler. It ensures that the middleware is associated with the
   /// correct base path template.
-  Handler lower(Middleware middleware) {
-    middleware.basePathTemplate = basePathTemplate;
+  Handler lower(Processor processor) {
+    var middleware = Middleware(pathTemplate, method, processor);
+    middleware.parent = this;
     lowerMiddleware.add(middleware);
     return this;
   }

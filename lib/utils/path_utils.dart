@@ -1,3 +1,6 @@
+import 'package:dart_flux/core/server/routing/interface/base_path.dart';
+import 'package:dart_flux/utils/string_utils.dart';
+
 class PathUtils {
   /// Checks if the [requestPath] matches the [handlerPath].
   /// Supports exact matches, path parameters (e.g., `/user/:id`), and wildcards (`*`).
@@ -79,14 +82,15 @@ class PathUtils {
     return params;
   }
 
-  /// Combines [basePath] and [entityPath] into a final path.
+  /// Combines [parentPath] and [entityPath] into a final path.
   /// If either is null, it returns the other. If both are null, it returns null.
   /// Example:
-  /// - `basePath = '/api'`, `entityPath = '/user'` -> `/api/user`
-  static String? finalPath(String? basePath, String? entityPath) {
-    return entityPath == null && basePath == null
-        ? null // Return null if both paths are null
-        : (basePath ?? '') +
-            (entityPath ?? ''); // Concatenate base and entity paths
+  /// - `parentPath = '/api'`, `entityPath = '/user'` -> `/api/user`
+  static String? finalPath(BasePath? parent, String? path) {
+    if (parent == null) return path;
+    String? parentPath = parent.pathTemplate;
+    String? res = StringUtils.combineStrings(parentPath, path);
+    String? finalRes = finalPath(parent.parent, res);
+    return finalRes;
   }
 }

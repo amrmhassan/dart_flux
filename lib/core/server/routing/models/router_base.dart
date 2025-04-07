@@ -1,19 +1,24 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 
+import 'package:dart_flux/core/server/routing/interface/base_path.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/repo/handler.dart';
 import 'package:dart_flux/core/server/routing/repo/router.dart';
-import 'package:dart_flux/utils/path_utils.dart';
 
 /// A base class that represents a router in the application.
 /// This class handles processing requests by managing pipelines (upper, main, and lower)
 /// of middlewares and handlers for a specific route.
-abstract class RouterBase implements RequestProcessor {
-  /// The base path for the router, which will apply to all sub-request processors.
-  String? basePath;
+abstract class RouterBase extends BasePath implements RequestProcessor {
+  /// this is the same as the pathTemplate
+  @override
+  String? pathTemplate;
+
+  /// this is the parent of the handler, mostly a router
+  @override
+  BasePath? parent;
 
   // Pipeline for middlewares that run before the main processing
   List<Middleware> upperPipeline = [];
@@ -35,21 +40,11 @@ abstract class RouterBase implements RequestProcessor {
 
   @override
   List<RoutingEntity> processors(String path, HttpMethod method) {
-    // Combines base paths and extracts processors from different pipelines.
-
-    // The final base path template is the concatenation of the basePath
-    // and basePathTemplate from the parent (usually another router).
-    String? finalBasePathTemplate = PathUtils.finalPath(
-      basePath,
-      basePathTemplate,
-    );
-
     // Extract processors from the main pipeline
     var main = _extractFromPipeline(
       mainPipeline,
       path,
       method,
-      finalBasePathTemplate,
       handlerIsAMust:
           true, // Ensures at least one handler exists in the pipeline
     );
@@ -60,7 +55,6 @@ abstract class RouterBase implements RequestProcessor {
       upperPipeline,
       path,
       method,
-      finalBasePathTemplate,
       handlerIsAMust: false,
     );
 
@@ -69,7 +63,6 @@ abstract class RouterBase implements RequestProcessor {
       lowerPipeline,
       path,
       method,
-      finalBasePathTemplate,
       handlerIsAMust: false,
     );
 
@@ -84,8 +77,7 @@ abstract class RouterBase implements RequestProcessor {
   List<RoutingEntity> _extractFromPipeline(
     List<RequestProcessor> pipeLine,
     String path,
-    HttpMethod method,
-    String? basePathTemplate, {
+    HttpMethod method, {
 
     /// If true, the pipeline must contain a handler at the end.
     required bool handlerIsAMust,
@@ -118,7 +110,4 @@ abstract class RouterBase implements RequestProcessor {
 
     return mainProcessors;
   }
-
-  @override
-  String? basePathTemplate;
 }

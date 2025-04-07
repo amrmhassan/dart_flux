@@ -3,18 +3,18 @@ import 'package:dart_flux/core/server/routing/repo/router.dart';
 import 'package:dart_flux/core/server/routing/repo/test_model_repository.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
-class CrudRouter extends Router {
-  final String entity;
-  late ModelRepositoryInterface repo;
-
-  CrudRouter(this.entity, {ModelRepositoryInterface? repo}) {
-    this.basePathTemplate = entity;
-    this.repo = repo ?? TestModelRepository();
-    _generateCrudRouter();
+class CrudRouter {
+  static Router init(String entity, {ModelRepositoryInterface? repo}) {
+    ModelRepositoryInterface finalRepo = repo ?? TestModelRepository();
+    return generateCrudRouter(Router.path(entity), finalRepo);
   }
 
-  void _generateCrudRouter() {
-    get(
+  static Router generateCrudRouter(
+    Router router,
+    ModelRepositoryInterface repo,
+  ) {
+    router = router
+        .get(
           '/',
           (req, res, pathArgs) async =>
               SendResponse.json(res, await repo.getAll()),
@@ -26,7 +26,7 @@ class CrudRouter extends Router {
           return SendResponse.json(res, data);
         }, signature: 'get single model by id')
         .post('/', (req, res, pathArgs) async {
-          final json = await req.asJson;
+          final json = await req.bytesForm();
           var model = await repo.insert(json);
           return SendResponse.json(res, model);
         }, signature: 'add new model')
@@ -41,5 +41,6 @@ class CrudRouter extends Router {
           var deleted = await repo.delete(id);
           return SendResponse.json(res, deleted);
         }, signature: 'deletes a model');
+    return router;
   }
 }

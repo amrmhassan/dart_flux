@@ -100,6 +100,11 @@ class SendResponse {
     return _write(response, convert.json.encode(data), status ?? HttpStatus.ok);
   }
 
+  static Future<FluxResponse> helloWold(FluxResponse response) {
+    // Convert the data to JSON and send it in the response.
+    return _write(response, 'Hello world', HttpStatus.ok);
+  }
+
   /// A method to send an HTML response.
   static Future<FluxResponse> html(
     FluxResponse response,

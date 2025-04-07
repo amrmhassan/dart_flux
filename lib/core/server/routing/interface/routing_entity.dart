@@ -1,5 +1,6 @@
 import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
+import 'package:dart_flux/core/server/routing/interface/base_path.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/repo/handler.dart';
 import 'package:dart_flux/core/server/utils/path_checker.dart';
@@ -9,13 +10,20 @@ import 'package:dart_flux/core/server/utils/path_checker.dart';
 ///
 /// This class represents either a middleware or a handler, each associated with
 /// a path template and HTTP method to match requests and execute the processor function.
-class RoutingEntity {
+class RoutingEntity extends BasePath {
+  /// this is the same as the pathTemplate
+  @override
+  String? pathTemplate;
+
+  /// this is the parent of the handler, mostly a router
+  @override
+  BasePath? parent;
+
   /// The path template of the handler or middleware.
   ///
   /// If null, this entity will apply to all paths.
   /// A non-null value indicates that the entity will only apply to paths that match the template.
   /// For a global middleware, set [pathTemplate] to null and [method] to [HttpMethod.all].
-  final String? pathTemplate;
 
   /// The HTTP method associated with this handler or middleware.
   ///
@@ -74,12 +82,6 @@ class RoutingEntity {
       entity: this,
     ).matches;
   }
-
-  /// The final path to be used when matching this routing entity.
-  ///
-  /// This is populated after processing and will be used to match requests
-  /// against the entity's [pathTemplate].
-  String? finalPath;
 
   /// Returns a string representation of the routing entity, including its
   /// runtime type and signature, for debugging and logging purposes.

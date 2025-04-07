@@ -13,10 +13,18 @@ void main() {
 
   setUpAll(() async {
     Router router = Router()
-        .get('/user/welcome/:id', Processors.welcomeID)
-        .get('/user/:userName', Processors.userName)
-        .get('/:path', Processors.path)
-        .get('/*', Processors.wildcard);
+        .get(
+          '/user/welcome/:id',
+          Processors.welcomeID,
+          signature: 'get the 3rd params',
+        )
+        .get(
+          '/user/:userName',
+          Processors.userName,
+          signature: 'get the 2rd params',
+        )
+        .get('/:path', Processors.path, signature: 'get 1st param')
+        .get('/*', Processors.wildcard, signature: 'get wildcard');
     server = Server(InternetAddress.anyIPv4, 0, router, loggerEnabled: false);
     await server.run();
     dio = dioPort(server.port);
@@ -35,7 +43,7 @@ void main() {
       expect(res.data, 'hello, AmrHassan');
       expect(res.statusCode, HttpStatus.ok);
     });
-    test('in a path', () async {
+    test('1st parameter', () async {
       var res = await dio.get('/some_path_will_be_here');
       expect(res.data, 'provided path is some_path_will_be_here');
       expect(res.statusCode, HttpStatus.ok);

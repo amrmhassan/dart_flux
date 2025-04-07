@@ -1,3 +1,4 @@
+import 'package:dart_flux/core/server/parser/models/bytes_form_data.dart';
 import 'package:dart_flux/core/server/routing/models/model.dart';
 
 abstract class ModelRepositoryInterface<T extends Model> {
@@ -8,7 +9,7 @@ abstract class ModelRepositoryInterface<T extends Model> {
 
   Future<Json> getById(String? id);
 
-  Future<Json> insert(Json json);
+  Future<Json> insert(BytesFormData json);
 
   Future<Json> update(String? id, Json updateData);
 

@@ -1,3 +1,4 @@
+import 'package:dart_flux/core/server/parser/models/bytes_form_data.dart';
 import 'package:dart_flux/core/server/routing/interface/model_repository_interface.dart';
 import 'package:dart_flux/core/server/routing/models/model.dart';
 
@@ -20,7 +21,7 @@ class TestModelRepository implements ModelRepositoryInterface {
   }
 
   @override
-  Future<Json> insert(Json json) {
+  Future<Json> insert(BytesFormData json) {
     return Future.value(_testModel);
   }
 

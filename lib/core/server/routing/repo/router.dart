@@ -1,8 +1,10 @@
+import 'package:dart_flux/core/server/routing/interface/model_repository_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/routing/models/router_base.dart';
+import 'package:dart_flux/core/server/routing/repo/crud_router.dart';
 import 'package:dart_flux/core/server/routing/repo/handler.dart';
 
 /// A class that extends [RouterBase] and provides methods for registering
@@ -21,18 +23,46 @@ class Router extends RouterBase {
 
   /// A factory method to create a router instance with a base path.
   factory Router.path(String path) {
-    return Router()..basePath = path;
+    return Router()..setPath(path);
+  }
+  factory Router.crud(String entity, {ModelRepositoryInterface? repo}) {
+    return CrudRouter.init(entity, repo: repo);
   }
 
   //? adding request processors
+
+  void _addRouter(Router router) {
+    router.parent = this;
+    mainPipeline.add(router);
+  }
+
+  void _addHandler(Handler handler) {
+    handler.parent = this;
+    mainPipeline.add(handler);
+  }
+
+  void _addMiddleware(Middleware middleware) {
+    middleware.parent = this;
+    mainPipeline.add(middleware);
+  }
+
+  void _addUpperMiddleware(Middleware middleware) {
+    middleware.parent = this;
+    upperPipeline.add(middleware);
+  }
+
+  void _addLowerMiddleware(Middleware middleware) {
+    middleware.parent = this;
+    lowerPipeline.add(middleware);
+  }
 
   /// Adds a sub-router to the current router.
   ///
   /// This method allows you to add another [Router] instance to the current router's
   /// pipeline, effectively creating a nested routing structure.
   Router router(Router router) {
-    router.basePath = basePath;
-    mainPipeline.add(router);
+    _addRouter(router);
+
     return this;
   }
 
@@ -41,8 +71,7 @@ class Router extends RouterBase {
   /// This method adds a [Handler] to the main pipeline of the router, where it will
   /// handle incoming requests matching the specified path and method.
   Router handler(Handler handler) {
-    handler.basePathTemplate = basePath;
-    mainPipeline.add(handler);
+    _addHandler(handler);
     return this;
   }
 
@@ -50,8 +79,7 @@ class Router extends RouterBase {
   ///
   /// This method adds a [Middleware] directly to the main pipeline of the router.
   Router rawMiddleware(Middleware middleware) {
-    middleware.basePathTemplate = basePath;
-    mainPipeline.add(middleware);
+    _addMiddleware(middleware);
     return this;
   }
 
@@ -71,8 +99,7 @@ class Router extends RouterBase {
   /// This middleware will be executed before any other middleware or handler in the
   /// router's pipeline, making it ideal for tasks such as authentication or logging.
   Router upperMiddleware(Middleware middleware) {
-    middleware.basePathTemplate = basePath;
-    upperPipeline.add(middleware);
+    _addUpperMiddleware(middleware);
     return this;
   }
 
@@ -89,8 +116,7 @@ class Router extends RouterBase {
   /// This middleware will be executed after all other middlewares and handlers in the
   /// router's pipeline, which is useful for tasks such as final logging or cleanup.
   Router lowerMiddleware(Middleware middleware) {
-    middleware.basePathTemplate = basePath;
-    lowerPipeline.add(middleware);
+    _addLowerMiddleware(middleware);
     return this;
   }
 
@@ -109,7 +135,6 @@ class Router extends RouterBase {
     String? signature,
   }) {
     Handler h = Handler(path, method, processor, signature: signature);
-    h.basePathTemplate = basePath;
     return handler(h);
   }
 

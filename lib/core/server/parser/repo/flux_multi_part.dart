@@ -12,7 +12,7 @@ import 'package:dart_flux/core/server/parser/models/bytes_form_field.dart';
 import 'package:dart_flux/core/server/parser/models/file_form_field.dart';
 import 'package:dart_flux/core/server/parser/models/form_data.dart';
 import 'package:dart_flux/core/server/parser/models/text_form_field.dart';
-import 'package:dart_flux/extensions/string_utils.dart';
+import 'package:dart_flux/extensions/string_extensions.dart';
 import 'package:mime/mime.dart';
 
 /// Class responsible for handling multipart form data in HTTP requests.

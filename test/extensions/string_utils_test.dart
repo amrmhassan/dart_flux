@@ -1,4 +1,4 @@
-import 'package:dart_flux/extensions/string_utils.dart';
+import 'package:dart_flux/extensions/string_extensions.dart';
 import 'package:test/test.dart';
 
 void main() {

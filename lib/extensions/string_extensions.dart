@@ -1,5 +1,5 @@
 /// Extension on String for useful string manipulations.
-extension StringUtils on String {
+extension StringExtensions on String {
   /// Capitalizes the first letter of the string and makes the rest lowercase.
   /// Example: "hello world" -> "Hello world"
   String get capitalize {
