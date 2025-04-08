@@ -7,7 +7,7 @@ part of 'file_entity.dart';
 // **************************************************************************
 
 FileEntity _$FileEntityFromJson(Map<String, dynamic> json) => FileEntity(
-  parentAlias: json['parentAlias'] as String,
+  parentAlias: json['parentAlias'] as String?,
   path: json['path'] as String,
 );
 

@@ -121,7 +121,7 @@ class TestProcessors {
   static ProcessorHandler file = (request, response, pathArgs) async {
     FileHelper helper = FileHelper(fileSize: 1024, fileName: 'oiquweriow');
     var file = await helper.create();
-    var res = await SendResponse.file(request, file);
+    var res = await SendResponse.file(response, file);
     await file.delete();
     return res;
   };
@@ -140,7 +140,7 @@ class TestProcessors {
   static ProcessorHandler stream = (request, response, pathArgs) async {
     FileHelper helper = FileHelper(fileName: 'aaaaaa');
     var file = await helper.create();
-    var res = await SendResponse.stream(request, file);
+    var res = await SendResponse.stream(response, file);
     await file.delete();
     return res;
   };

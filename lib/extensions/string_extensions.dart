@@ -1,3 +1,5 @@
+import 'package:dart_flux/utils/path_utils.dart';
+
 /// Extension on String for useful string manipulations.
 extension StringExtensions on String {
   /// Capitalizes the first letter of the string and makes the rest lowercase.
@@ -15,6 +17,10 @@ extension StringExtensions on String {
   /// "hello world".strip("world") -> "hello "
   String strip(String stripped, {bool all = true}) =>
       all ? _stripStringAll(this, stripped) : _stripString(this, stripped);
+
+  String get cleanPath {
+    return PathUtils.cleanPath(this);
+  }
 }
 
 /// This helper function removes the specified [stripped] string from the start

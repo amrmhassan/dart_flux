@@ -1,7 +1,8 @@
 import 'dart:io';
 
 import 'package:dart_flux/core/errors/server_error.dart';
-import 'package:dart_flux/core/server/routing/models/flux_request.dart';
+import 'package:dart_flux/core/server/parser/models/folder_server.dart';
+import 'package:dart_flux/core/server/parser/repo/flux_serve_folder.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
 import 'package:dart_flux/utils/response_utils.dart';
 import 'dart:convert' as convert;
@@ -139,16 +140,32 @@ class SendResponse {
   }
 
   /// A method to send a file in the response by chunking it.
-  static Future<FluxResponse> file(FluxRequest request, File file) async {
+  static Future<FluxResponse> file(FluxResponse response, File file) async {
     // Send the file using the ResponseUtils utility for chunked file transfer.
-    await _responseUtils.sendChunkedFile(request, file);
-    return request.response.close();
+    await _responseUtils.sendChunkedFile(response.request, file);
+    return response.close();
   }
 
   /// A method to stream a file in the response asynchronously.
-  static Future<FluxResponse> stream(FluxRequest request, File file) async {
+  static Future<FluxResponse> stream(FluxResponse response, File file) async {
     // Stream the file to the client.
-    await _responseUtils.streamV2(request.request, file);
-    return request.response;
+    await _responseUtils.streamV2(response.request.request, file);
+    return response;
+  }
+
+  static Future<FluxResponse> serveFolder({
+    required FluxResponse response,
+    required FolderServer server,
+    required String requestedPath,
+    bool blockIfFolder = true,
+    bool serveFolderContent = false,
+  }) async {
+    return FluxServeFolder(
+      requestedPath: requestedPath,
+      response: response,
+      server: server,
+      blockIfFolder: blockIfFolder,
+      serveFolderContent: serveFolderContent,
+    ).serve();
   }
 }

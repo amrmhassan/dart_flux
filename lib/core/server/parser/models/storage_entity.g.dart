@@ -8,7 +8,7 @@ part of 'storage_entity.dart';
 
 StorageEntity _$StorageEntityFromJson(Map<String, dynamic> json) =>
     StorageEntity(
-      parentAlias: json['parentAlias'] as String,
+      parentAlias: json['parentAlias'] as String?,
       path: json['path'] as String,
     );
 

@@ -93,4 +93,8 @@ class PathUtils {
     String? finalRes = finalPath(parent.parent, res);
     return finalRes;
   }
+
+  static String cleanPath(String org) {
+    return org.replaceAll('\\', '/');
+  }
 }
