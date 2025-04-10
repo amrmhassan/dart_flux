@@ -13,12 +13,18 @@ dependencies:
   dart_id: ^2.0.2
   logger: ^2.5.0
   dio: ^5.8.0+1
+  json_annotation: ^4.9.0
 
 
 dev_dependencies:
   build_runner: ^2.4.15
+  json_serializable: ^6.9.4
   lints: ^5.0.0
   mockito: ^5.4.5
   mocktail: ^1.0.4
   test: ^1.25.15
   test_cov: ^1.0.1
+
+
+#  dart run build_runner build --delete-conflicting-outputs
+#  dart run build_runner watch --delete-conflicting-outputs

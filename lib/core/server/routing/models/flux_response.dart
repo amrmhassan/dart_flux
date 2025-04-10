@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
+import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 
 /// The FluxResponse class wraps around the HttpResponse object and provides methods
 /// for managing the HTTP response during request processing, including writing content
@@ -66,6 +67,7 @@ class FluxResponse extends HttpEntity {
 
   // Provides access to the underlying HttpResponse
   HttpResponse get response => _request.response;
+  FluxRequest get request => FluxRequest(_request);
 
   // Provides access to the headers of the response
   HttpHeaders get headers => response.headers;
