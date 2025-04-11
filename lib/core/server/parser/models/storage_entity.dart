@@ -17,7 +17,7 @@ class StorageEntity {
 }
 
 enum EntityType {
-  @JsonValue('files')
+  @JsonValue('file')
   file,
   @JsonValue('folder')
   folder,

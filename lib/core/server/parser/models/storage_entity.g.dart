@@ -19,7 +19,7 @@ Map<String, dynamic> _$StorageEntityToJson(StorageEntity instance) =>
     };
 
 const _$EntityTypeEnumMap = {
-  EntityType.file: 'files',
+  EntityType.file: 'file',
   EntityType.folder: 'folder',
   EntityType.unknown: 'unknown',
 };
