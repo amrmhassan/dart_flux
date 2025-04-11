@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dart_flux/core/server/parser/models/folder_server.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
@@ -106,7 +107,7 @@ class TestProcessors {
     return SendResponse.badRequest(response, 'bad request');
   };
   static ProcessorHandler binary = (request, response, pathArgs) async {
-    FileHelper helper = FileHelper(fileSize: 1024, fileName: 'alksjdfkla');
+    FileHelper helper = FileHelper(fileSize: 1024, filePath: 'alksjdfkla');
     var file = await helper.create();
     var bytes = file.readAsBytesSync();
     await file.delete();
@@ -119,7 +120,7 @@ class TestProcessors {
     return SendResponse.error(response, 'this is error');
   };
   static ProcessorHandler file = (request, response, pathArgs) async {
-    FileHelper helper = FileHelper(fileSize: 1024, fileName: 'oiquweriow');
+    FileHelper helper = FileHelper(fileSize: 1024, filePath: 'oiquweriow');
     var file = await helper.create();
     var res = await SendResponse.file(response, file);
     await file.delete();
@@ -138,7 +139,7 @@ class TestProcessors {
     return SendResponse.unauthorized(response, 'unauthorized');
   };
   static ProcessorHandler stream = (request, response, pathArgs) async {
-    FileHelper helper = FileHelper(fileName: 'aaaaaa');
+    FileHelper helper = FileHelper(filePath: 'aaaaaa');
     var file = await helper.create();
     var res = await SendResponse.stream(response, file);
     await file.delete();
@@ -180,8 +181,8 @@ class TestProcessors {
     response,
     pathArgs,
   ) async {
-    FileHelper helper = FileHelper(fileName: 'lowerMiddleware.bin');
-    FileHelper helper2 = FileHelper(fileName: 'lower.bin');
+    FileHelper helper = FileHelper(filePath: 'lowerMiddleware.bin');
+    FileHelper helper2 = FileHelper(filePath: 'lower.bin');
     var file = await helper.create();
     var file2 = await helper2.create();
     request.context.add('filePath', file.path);
@@ -209,5 +210,22 @@ class TestPostsProcessors {
   };
   static ProcessorHandler postData = (request, response, pathArgs) async {
     return SendResponse.data(response, 'post ${pathArgs['id']}');
+  };
+}
+
+class FolderProcessors {
+  static ProcessorHandler noAlias = (request, response, pathArgs) async {
+    FileHelper helper = FileHelper(
+      fileSize: 20,
+      filePath: './tempFolder/file1.bin',
+    );
+    var file1 = await helper.create();
+    var res = await SendResponse.serveFolder(
+      response: response,
+      server: FolderServer(path: './tempFolder'),
+      requestedPath: pathArgs['*'],
+    );
+    await file1.parent.delete(recursive: true);
+    return res;
   };
 }

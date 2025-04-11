@@ -3,11 +3,11 @@ import 'dart:math';
 import 'dart:typed_data';
 
 class FileHelper {
-  late String _fileName;
+  late String _filePath;
   final int _fileSize; // Size in bytes
 
-  FileHelper({String? fileName, int fileSize = 1024}) : _fileSize = fileSize {
-    _fileName = fileName ?? Random().nextInt(10000).toString();
+  FileHelper({String? filePath, int fileSize = 1024}) : _fileSize = fileSize {
+    _filePath = filePath ?? Random().nextInt(10000).toString();
   }
 
   // Method to create a random file with random bytes
@@ -16,9 +16,11 @@ class FileHelper {
     final randomBytes = _generateRandomBytes(_fileSize);
 
     // Create the file
-    final file = File(_fileName);
+    final file = File(_filePath);
     if (file.existsSync()) {
       await file.delete(); // Delete the file if it already exists
+    } else {
+      await file.create(recursive: true);
     }
 
     // Write the random bytes to the file
@@ -28,13 +30,13 @@ class FileHelper {
 
   // Method to delete the file
   Future<void> delete() async {
-    final file = File(_fileName);
+    final file = File(_filePath);
 
     // Check if the file exists
     if (await file.exists()) {
       await file.delete();
     } else {
-      print('File $_fileName does not exist');
+      print('File $_filePath does not exist');
     }
   }
 
