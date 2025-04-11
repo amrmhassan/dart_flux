@@ -1,4 +1,5 @@
 import 'package:dart_flux/core/server/routing/interface/base_path.dart';
+import 'package:dart_flux/extensions/string_extensions.dart';
 import 'package:dart_flux/utils/string_utils.dart';
 
 class PathUtils {
@@ -95,6 +96,9 @@ class PathUtils {
   }
 
   static String cleanPath(String org) {
-    return org.replaceAll('\\', '/');
+    org = org.replaceAll('\\', '/');
+    org = org.replaceAll('//', '/');
+    org = org.strip('/');
+    return org;
   }
 }

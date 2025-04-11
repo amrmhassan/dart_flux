@@ -5,7 +5,7 @@ part 'file_entity.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class FileEntity extends StorageEntity {
-  FileEntity({required super.parentAlias, required super.path});
+  FileEntity({required String path}) : super(type: EntityType.file, path: path);
   @override
   factory FileEntity.fromJson(Map<String, dynamic> json) =>
       _$FileEntityFromJson(json);

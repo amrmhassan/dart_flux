@@ -46,7 +46,7 @@ class FluxServeFolder implements ServeFolderInterface {
     if (!path.contains(server.alias)) {
       throw ServerError('no alias found');
     }
-    path = path.replaceFirst(server.alias, server.path);
+    path = path.replaceFirst(server.alias, server.path + '/');
     return path;
   }
 
@@ -74,15 +74,10 @@ class FluxServeFolder implements ServeFolderInterface {
   }
 
   Future<StorageEntity> _getEntity() async {
-    String parentPath;
-    String? alias = server.alias;
-    if (alias.isEmpty) {
-      parentPath = server.path;
-    } else {
-      parentPath = requestedPath.replaceFirst(alias, server.path);
-    }
-    parentPath = parentPath.strip('/');
-    String entityPath = parentPath + '/' + requestedPath;
+    String entityPath;
+    String alias = server.alias;
+    entityPath = requestedPath.replaceFirst(alias, server.path + '/');
+    entityPath = entityPath.cleanPath;
     var fileEntity = await _getFile(entityPath);
     if (fileEntity != null) return fileEntity;
     var folderEntity = await _getFolder(entityPath);
@@ -97,10 +92,7 @@ class FluxServeFolder implements ServeFolderInterface {
     File file = File(path);
     bool exist = await file.exists();
     if (!exist) return null;
-    var entity = FileEntity(
-      parentAlias: server.alias,
-      path: _truncatedEntityPath(path),
-    );
+    var entity = FileEntity(path: _truncatedEntityPath(path));
     return entity;
   }
 
@@ -120,27 +112,25 @@ class FluxServeFolder implements ServeFolderInterface {
           dir.listSync().map((entity) {
             if (entity is Directory) {
               FolderEntity folderEntity = FolderEntity(
-                parentAlias: server.alias,
                 path: _truncatedEntityPath(entity.path),
                 children: [],
               );
               return folderEntity;
             } else if (entity is File) {
               FileEntity fileEntity = FileEntity(
-                parentAlias: server.alias,
                 path: _truncatedEntityPath(entity.path),
               );
               return fileEntity;
             } else {
-              throw ServerError(
-                'unknown file system entity type',
-                status: HttpStatus.internalServerError,
+              StorageEntity entity = StorageEntity(
+                path: path,
+                type: EntityType.unknown,
               );
+              return entity;
             }
           }).toList();
     }
     var entity = FolderEntity(
-      parentAlias: server.alias,
       path: _truncatedEntityPath(path),
       children: children,
     );

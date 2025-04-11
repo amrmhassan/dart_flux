@@ -6,11 +6,8 @@ part 'folder_entity.g.dart';
 @JsonSerializable(explicitToJson: true)
 class FolderEntity extends StorageEntity {
   final List<StorageEntity> children;
-  FolderEntity({
-    required super.parentAlias,
-    required super.path,
-    required this.children,
-  });
+  FolderEntity({required String path, required this.children})
+    : super(path: path, type: EntityType.folder);
   @override
   factory FolderEntity.fromJson(Map<String, dynamic> json) =>
       _$FolderEntityFromJson(json);

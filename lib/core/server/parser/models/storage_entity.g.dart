@@ -8,12 +8,18 @@ part of 'storage_entity.dart';
 
 StorageEntity _$StorageEntityFromJson(Map<String, dynamic> json) =>
     StorageEntity(
-      parentAlias: json['parentAlias'] as String?,
       path: json['path'] as String,
+      type: $enumDecode(_$EntityTypeEnumMap, json['type']),
     );
 
 Map<String, dynamic> _$StorageEntityToJson(StorageEntity instance) =>
     <String, dynamic>{
       'path': instance.path,
-      'parentAlias': instance.parentAlias,
+      'type': _$EntityTypeEnumMap[instance.type]!,
     };
+
+const _$EntityTypeEnumMap = {
+  EntityType.file: 'files',
+  EntityType.folder: 'folder',
+  EntityType.unknown: 'unknown',
+};

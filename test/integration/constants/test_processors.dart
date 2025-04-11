@@ -214,18 +214,89 @@ class TestPostsProcessors {
 }
 
 class FolderProcessors {
+  static Future<void> _deleteTempFolder() async {
+    await Directory('./tempFolder').delete(recursive: true);
+  }
+
   static ProcessorHandler noAlias = (request, response, pathArgs) async {
     FileHelper helper = FileHelper(
       fileSize: 20,
       filePath: './tempFolder/file1.bin',
     );
-    var file1 = await helper.create();
+    await helper.create();
     var res = await SendResponse.serveFolder(
       response: response,
       server: FolderServer(path: './tempFolder'),
       requestedPath: pathArgs['*'],
     );
-    await file1.parent.delete(recursive: true);
+    await _deleteTempFolder();
+    return res;
+  };
+  static ProcessorHandler alias = (request, response, pathArgs) async {
+    FileHelper helper = FileHelper(
+      fileSize: 20,
+      filePath: './tempFolder/file1.bin',
+    );
+    await helper.create();
+    String path = pathArgs['*'];
+    var res = await SendResponse.serveFolder(
+      response: response,
+      server: FolderServer(path: './tempFolder', alias: 'bucket'),
+      requestedPath: path,
+    );
+    await _deleteTempFolder();
+
+    return res;
+  };
+  static ProcessorHandler subDirNoAlias = (request, response, pathArgs) async {
+    FileHelper helper = FileHelper(
+      fileSize: 20,
+      filePath: './tempFolder/subDir/file1.bin',
+    );
+    await helper.create();
+    String path = pathArgs['*'];
+    var res = await SendResponse.serveFolder(
+      response: response,
+      server: FolderServer(path: './tempFolder'),
+      requestedPath: path,
+    );
+    await _deleteTempFolder();
+    return res;
+  };
+  static ProcessorHandler subDirWithAlias = (
+    request,
+    response,
+    pathArgs,
+  ) async {
+    FileHelper helper = FileHelper(
+      fileSize: 20,
+      filePath: './tempFolder/subDir/file1.bin',
+    );
+    await helper.create();
+    String path = pathArgs['*'];
+    var res = await SendResponse.serveFolder(
+      response: response,
+      server: FolderServer(path: './tempFolder', alias: 'bucket'),
+      requestedPath: path,
+    );
+    await _deleteTempFolder();
+    return res;
+  };
+  static ProcessorHandler folderContent = (request, response, pathArgs) async {
+    FileHelper helper = FileHelper(
+      fileSize: 20,
+      filePath: './tempFolder/subDir/file1.bin',
+    );
+    await helper.create();
+    String path = pathArgs['*'];
+    var res = await SendResponse.serveFolder(
+      response: response,
+      server: FolderServer(path: './tempFolder', alias: 'bucket'),
+      requestedPath: path,
+      serveFolderContent: true,
+      blockIfFolder: false,
+    );
+    await _deleteTempFolder();
     return res;
   };
 }

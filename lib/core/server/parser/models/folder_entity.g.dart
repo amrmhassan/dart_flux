@@ -7,7 +7,6 @@ part of 'folder_entity.dart';
 // **************************************************************************
 
 FolderEntity _$FolderEntityFromJson(Map<String, dynamic> json) => FolderEntity(
-  parentAlias: json['parentAlias'] as String?,
   path: json['path'] as String,
   children:
       (json['children'] as List<dynamic>)
@@ -18,6 +17,5 @@ FolderEntity _$FolderEntityFromJson(Map<String, dynamic> json) => FolderEntity(
 Map<String, dynamic> _$FolderEntityToJson(FolderEntity instance) =>
     <String, dynamic>{
       'path': instance.path,
-      'parentAlias': instance.parentAlias,
       'children': instance.children.map((e) => e.toJson()).toList(),
     };
