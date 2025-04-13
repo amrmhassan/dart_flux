@@ -2,7 +2,7 @@ import 'package:dart_id/dart_id.dart';
 import 'package:logger/logger.dart';
 
 /// this is for generating random ids
-DartID dartID = DartID();
+DartID dartID = DartID(swapParts: false);
 
 /// this is for logging in the console
 Logger logger = Logger();
