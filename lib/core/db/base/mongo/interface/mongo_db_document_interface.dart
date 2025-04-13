@@ -1,10 +1,10 @@
-import 'package:dart_flux/core/db/base/models/coll_ref_mongo.dart';
+import 'package:dart_flux/core/db/base/mongo/models/coll_ref_mongo.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
-class MongoDbDocument {
+abstract class MongoDbDocumentInterface {
   final String _id;
   final CollRefMongo _collRef;
-  const MongoDbDocument(this._id, this._collRef);
+  const MongoDbDocumentInterface(this._id, this._collRef);
 
   /// this will update certain values presented in the doc object
   Future<WriteResult> update(
