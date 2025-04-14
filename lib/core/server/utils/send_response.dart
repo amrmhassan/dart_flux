@@ -130,7 +130,7 @@ class SendResponse {
     response.headers.add(HttpHeaders.contentLengthHeader, bytes.length);
 
     // Add the binary data to the response.
-    response.add(bytes, code: HttpStatus.ok);
+    response.add(bytes, code: status ?? HttpStatus.ok);
 
     // Flush the response buffer to ensure all data is written.
     await response.flush();

@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:dart_flux/core/errors/server_error.dart';
+import 'package:dart_flux/core/server/parser/models/folder_server.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
+import 'package:dart_flux/core/server/utils/send_response.dart';
 
 /// The FluxResponse class wraps around the HttpResponse object and provides methods
 /// for managing the HTTP response during request processing, including writing content
@@ -74,4 +76,55 @@ class FluxResponse extends HttpEntity {
 
   // Allows setting the status code for the response
   set statusCode(int code) => response.statusCode;
+
+  //? response methods
+  Future<FluxResponse> error(Object err, {int? status}) =>
+      SendResponse.error(this, err, status: status);
+
+  Future<FluxResponse> data(Object data, {int? status}) =>
+      SendResponse.data(this, data, status: status);
+
+  Future<FluxResponse> notFound([Object? data]) =>
+      SendResponse.notFound(this, data);
+
+  Future<FluxResponse> unauthorized([Object? data]) =>
+      SendResponse.unauthorized(this, data);
+
+  Future<FluxResponse> badRequest([Object? data]) =>
+      SendResponse.badRequest(this, data);
+
+  Future<FluxResponse> json(
+    FluxResponse response,
+    Object data, {
+    int? status,
+  }) => SendResponse.json(this, data, status: status);
+
+  Future<FluxResponse> helloWold() => SendResponse.helloWold(this);
+
+  Future<FluxResponse> html(
+    FluxResponse response,
+    Object data, {
+    int? status,
+  }) => SendResponse.html(this, data, status: status);
+
+  Future<FluxResponse> binary(List<int> bytes, {int? status}) =>
+      SendResponse.binary(this, bytes, status: status);
+
+  Future<FluxResponse> file(File file) => SendResponse.file(this, file);
+
+  Future<FluxResponse> stream(File file) => SendResponse.stream(this, file);
+
+  Future<FluxResponse> serveFolder({
+    required FolderServer server,
+    required String requestedPath,
+    bool blockIfFolder = true,
+    bool serveFolderContent = false,
+  }) => SendResponse.serveFolder(
+    response: this,
+    server: server,
+    requestedPath: requestedPath,
+
+    serveFolderContent: serveFolderContent,
+    blockIfFolder: blockIfFolder,
+  );
 }
