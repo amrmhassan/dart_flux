@@ -15,6 +15,7 @@ dependencies:
   dio: ^5.8.0+1
   json_annotation: ^4.9.0
   mongo_dart: ^0.10.4
+  argon2: ^1.0.1
 
 
 dev_dependencies:

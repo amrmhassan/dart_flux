@@ -34,7 +34,7 @@ class SendResponse {
   }) {
     if (err is ServerError) {
       // If the error is a ServerError, return it as a JSON response.
-      return json(response, err.toJson(), status: status ?? err.status);
+      return json(response, err.toClient(), status: status ?? err.status);
     } else {
       // If it's not a ServerError, create a new ServerError and call this method again.
       ServerError e = ServerError(
