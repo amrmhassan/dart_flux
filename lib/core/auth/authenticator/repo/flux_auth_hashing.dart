@@ -32,7 +32,8 @@ class FluxAuthHashing implements AuthHashingInterface {
       final result = Uint8List(32);
       _argon2.generateBytes(passwordBytes, result, 0, result.length);
 
-      return '${salt.toHexString()}:${result.toHexString()}';
+      String finalRes = '${salt.toHexString()}:${result.toHexString()}';
+      return finalRes;
     } catch (e) {
       throw ServerError('Error hashing password');
     }
@@ -62,7 +63,7 @@ class FluxAuthHashing implements AuthHashingInterface {
 
       return result.toHexString() == parts[1];
     } catch (e) {
-      throw ServerError('Error verifying password');
+      return false;
     }
   }
 }

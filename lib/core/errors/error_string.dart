@@ -20,6 +20,10 @@ class ErrorString {
   String unknownRequestSize =
       'Request size is unknown, please set ${HttpHeaders.contentLengthHeader} header';
   String fileAlreadyExists = 'File already exists';
+  String jwtExpired = 'JWT Expired';
+  String invalidToken = 'invalid token';
+  String loginAgain =
+      'Refresh token is invalid or expired. Please log in again.';
 }
 
 /// Provides corresponding error codes for each error defined in [ErrorString].
@@ -51,4 +55,13 @@ class ErrorCode implements ErrorString {
 
   @override
   String fileAlreadyExists = 'file-already-exists';
+
+  @override
+  String jwtExpired = 'jwt-expired';
+
+  @override
+  String invalidToken = 'invalid-token';
+
+  @override
+  String loginAgain = 'login-again';
 }
