@@ -1,7 +1,9 @@
 typedef Json = Map<String, dynamic>;
 
-abstract class Model {
-  Json toJson();
-  Model fromJson(Json json);
+abstract class Model implements ModelInterface {
   String get collectionName;
+}
+
+abstract class ModelInterface {
+  Json toJson();
 }

@@ -49,13 +49,14 @@ class MongoDbConnection implements DbConnectionInterface {
     return _db!;
   }
 
-  CollRefMongo collection(String name) {
-    return CollRefMongo(name, db);
-  }
-
   @override
   FluxLoggerInterface? logger;
 
   @override
   bool loggerEnabled;
+
+  @override
+  CollRefMongo collection(String name) {
+    return CollRefMongo(name, db);
+  }
 }

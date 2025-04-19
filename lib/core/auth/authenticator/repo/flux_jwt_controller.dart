@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/auth/authenticator/interface/jwt_controller_interface.dart';
+import 'package:dart_flux/core/auth/authenticator/models/tokens_model.dart';
 import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
@@ -72,12 +73,15 @@ class FluxJwtController implements JwtControllerInterface {
   }
 
   @override
-  Map<String, String> refreshTokens(String refreshToken) {
+  TokensModel refreshTokens(String refreshToken) {
     try {
       final payload = verifyToken(refreshToken);
       final newAccessToken = generateAccessToken(payload);
       final newRefreshToken = generateRefreshToken(payload);
-      return {'accessToken': newAccessToken, 'refreshToken': newRefreshToken};
+      return TokensModel(
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      );
     } on JWTExpiredException catch (e, s) {
       throw ServerError(
         errorString.loginAgain,

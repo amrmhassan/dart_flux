@@ -1,3 +1,4 @@
+import 'package:dart_flux/core/auth/authenticator/models/tokens_model.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 abstract class JwtControllerInterface {
@@ -11,5 +12,5 @@ abstract class JwtControllerInterface {
   Map<String, dynamic> verifyToken(String token);
   Map<String, dynamic> decodeToken(String token);
   bool isTokenExpired(String token);
-  Map<String, String> refreshTokens(String refreshToken);
+  TokensModel refreshTokens(String refreshToken);
 }

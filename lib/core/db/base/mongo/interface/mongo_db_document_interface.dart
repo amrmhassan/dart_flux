@@ -9,7 +9,7 @@ abstract class MongoDbDocumentInterface {
   /// this will update certain values presented in the doc object
   Future<WriteResult> update(
     Map<String, dynamic> doc, {
-    bool upsert = true,
+    bool upsert = false,
   }) async {
     var selector = where.eq('_id', _id);
     var updateQuery = modify;
@@ -26,11 +26,7 @@ abstract class MongoDbDocumentInterface {
   }
 
   /// this will remove the old document and add another one with the same id
-  Future<WriteResult> set(Map<String, dynamic> doc, {bool upset = true}) async {
-    var deleteRes = await delete();
-    if ((deleteRes.failure || deleteRes.isFailure) && !upset) {
-      return deleteRes;
-    }
+  Future<WriteResult> set(Map<String, dynamic> doc) async {
     doc['_id'] = _id;
     return _collRef.insertOne(doc);
   }
