@@ -1,9 +1,13 @@
 import 'dart:io';
+import 'package:dart_flux/constants/date_constants.dart';
 import 'package:dart_flux/constants/global.dart';
+import 'package:dart_flux/core/auth/auth_provider/interface/user_auth_interface.dart';
 import 'package:dart_flux/core/auth/authenticator/interface/jwt_controller_interface.dart';
+import 'package:dart_flux/core/auth/authenticator/models/jwt_payload_model.dart';
 import 'package:dart_flux/core/auth/authenticator/models/tokens_model.dart';
 import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
+import 'package:dart_flux/core/errors/types/auth_errors.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class FluxJwtController implements JwtControllerInterface {
@@ -27,10 +31,12 @@ class FluxJwtController implements JwtControllerInterface {
   });
 
   @override
-  Map<String, dynamic> decodeToken(String token) {
+  JwtPayloadModel decodeToken(String token) {
     try {
       final jwt = JWT.decode(token);
-      return jwt.payload as Map<String, dynamic>;
+      var payload = jwt.payload as Map<String, dynamic>;
+      JwtPayloadModel model = JwtPayloadModel.fromJson(payload);
+      return model;
     } on JWTException catch (e, s) {
       throw ServerError(
         errorString.invalidToken,
@@ -43,8 +49,15 @@ class FluxJwtController implements JwtControllerInterface {
   }
 
   @override
-  String generateAccessToken(Map<String, dynamic> payload) {
-    final jwt = JWT(payload, issuer: frameworkName);
+  String generateAccessToken(String userId) {
+    var payload = JwtPayloadModel(
+      userId: userId,
+      issuedAt: utc,
+      expiresAfter: accessTokenExpiry?.inSeconds,
+      type: TokenType.access,
+    );
+
+    final jwt = JWT(payload.toJson(), issuer: frameworkName);
     return jwt.sign(
       SecretKey(jwtSecret),
       expiresIn: accessTokenExpiry,
@@ -53,8 +66,14 @@ class FluxJwtController implements JwtControllerInterface {
   }
 
   @override
-  String generateRefreshToken(Map<String, dynamic> payload) {
-    final jwt = JWT(payload, issuer: frameworkName);
+  String generateRefreshToken(String userId) {
+    var payload = JwtPayloadModel(
+      userId: userId,
+      issuedAt: utc,
+      expiresAfter: refreshTokenExpiry?.inSeconds,
+      type: TokenType.refresh,
+    );
+    final jwt = JWT(payload.toJson(), issuer: frameworkName);
     return jwt.sign(
       SecretKey(jwtSecret),
       expiresIn: refreshTokenExpiry,
@@ -73,11 +92,12 @@ class FluxJwtController implements JwtControllerInterface {
   }
 
   @override
-  TokensModel refreshTokens(String refreshToken) {
+  TokensModel refreshTokens(String refreshToken, UserAuthInterface authModel) {
     try {
-      final payload = verifyToken(refreshToken);
-      final newAccessToken = generateAccessToken(payload);
-      final newRefreshToken = generateRefreshToken(payload);
+      final payload = verifyToken(refreshToken, authModel);
+
+      final newAccessToken = generateAccessToken(payload.userId);
+      final newRefreshToken = generateRefreshToken(payload.userId);
       return TokensModel(
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
@@ -102,11 +122,17 @@ class FluxJwtController implements JwtControllerInterface {
   }
 
   @override
-  Map<String, dynamic> verifyToken(String token) {
+  JwtPayloadModel verifyToken(String token, UserAuthInterface authModel) {
     try {
       final jwt = JWT.verify(token, SecretKey(jwtSecret));
       var payload = jwt.payload as Map<String, dynamic>;
-      return payload;
+      JwtPayloadModel model = JwtPayloadModel.fromJson(payload);
+      // here check if the token is revoked or not from the auth model
+      if (model.isRevoked(authModel.revokeDate)) {
+        throw JwtRevokedError();
+      }
+
+      return model;
     } on JWTExpiredException catch (e, s) {
       throw ServerError(
         errorString.jwtExpired,

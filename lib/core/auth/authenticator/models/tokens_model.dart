@@ -9,8 +9,7 @@ class TokensModel implements ModelInterface {
 
   const TokensModel({required this.accessToken, required this.refreshToken});
 
-  @override
-  TokensModel fromJson(Json json) => _$TokensModelFromJson(json);
+  factory TokensModel.fromJson(Json json) => _$TokensModelFromJson(json);
 
   @override
   Json toJson() => _$TokensModelToJson(this);

@@ -5,14 +5,15 @@ import 'package:dart_flux/core/db/connection/interface/db_connection_interface.d
 abstract class AuthDbProvider {
   late DbConnectionInterface dbConnection;
   // user data
-  Future<Map<String, dynamic>?> userDataById(String id);
-  Future<Map<String, dynamic>?> userAuthById(String id);
-  Future<Map<String, dynamic>?> userDataByEmail(String email);
-  Future<Map<String, dynamic>?> userAuthByEmail(String email);
+  Future<UserInterface?> userDataById(String id);
+  Future<UserAuthInterface?> userAuthById(String id);
+  Future<UserInterface?> userDataByEmail(String email);
+  Future<UserAuthInterface?> userAuthByEmail(String email);
   Future<void> saveUserData(UserInterface user);
   Future<void> saveUserAuth(UserAuthInterface auth);
   Future<void> updateUserData(UserInterface user);
   Future<void> updateUserAuth(UserAuthInterface auth);
-  Future<bool> userAuthExists(String id);
+  Future<bool> userAuthExists(String email);
   Future<bool> userDataExists(String email);
+  Future<void> revokeTokens(String id);
 }
