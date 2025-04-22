@@ -1,5 +1,4 @@
 import 'package:dart_flux/constants/global.dart';
-import 'package:dart_flux/core/auth/auth_provider/interface/auth_cache_interface.dart';
 import 'package:dart_flux/core/auth/auth_provider/interface/auth_db_provider.dart';
 import 'package:dart_flux/core/auth/auth_provider/interface/user_auth_interface.dart';
 import 'package:dart_flux/core/auth/auth_provider/models/flux_user.dart';
@@ -21,14 +20,10 @@ class FluxAuthenticator implements AuthenticatorInterface {
   @override
   AuthHashingInterface hashing;
 
-  @override
-  AuthCacheInterface cache;
-
   FluxAuthenticator({
     required this.jwtController,
     required this.authProvider,
     required this.hashing,
-    required this.cache,
   });
 
   @override

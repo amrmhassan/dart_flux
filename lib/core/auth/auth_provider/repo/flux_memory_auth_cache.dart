@@ -12,21 +12,37 @@ class FluxMemoryAuthCache implements AuthCacheInterface {
   Map<String, CachedItem<JwtPayloadModel>> _refreshTokenCache = {};
   Map<String, CachedItem<UserAuthInterface>> _authCache = {};
   Map<String, CachedItem<UserInterface>> _userCache = {};
+  Map<String, String> _emailIdCache = {};
+
+  T? _getValidCache<T>(
+    Map<String, CachedItem<T>> map,
+    String key,
+    void Function(String) onRemove,
+  ) {
+    var cache = map[key];
+    if (cache == null) return null;
+    if (cache.isExpired) {
+      onRemove(key);
+      return null;
+    }
+    return cache.value;
+  }
+
   @override
-  FutureOr<void> addAccessToken(String token, JwtPayloadModel payload) {
+  FutureOr<void> setAccessToken(String token, JwtPayloadModel payload) {
     if (!allowCache) return null;
     _accessTokenCache[token] = CachedItem(payload, expiresAfter: cacheDuration);
   }
 
   @override
-  FutureOr<void> addAuth(String id, UserAuthInterface auth) {
+  FutureOr<void> setAuth(String id, UserAuthInterface auth) {
     if (!allowCache) return null;
 
     _authCache[id] = CachedItem(auth, expiresAfter: cacheDuration);
   }
 
   @override
-  FutureOr<void> addUser(String id, UserInterface user) {
+  FutureOr<void> setUser(String id, UserInterface user) {
     if (!allowCache) return null;
 
     _userCache[id] = CachedItem(user, expiresAfter: cacheDuration);
@@ -34,41 +50,17 @@ class FluxMemoryAuthCache implements AuthCacheInterface {
 
   @override
   FutureOr<JwtPayloadModel?> getAccessToken(String token) async {
-    if (!allowCache) return null;
-
-    var cache = _accessTokenCache[token];
-    if (cache == null) return null;
-    if (cache.isExpired) {
-      await removeAccessToken(token);
-      return null;
-    }
-    return cache.value;
+    return _getValidCache(_accessTokenCache, token, removeAccessToken);
   }
 
   @override
   FutureOr<UserAuthInterface?> getAuth(String id) async {
-    if (!allowCache) return null;
-
-    var cache = _authCache[id];
-    if (cache == null) return null;
-    if (cache.isExpired) {
-      await removeAuth(id);
-      return null;
-    }
-    return cache.value;
+    return _getValidCache(_authCache, id, removeAuth);
   }
 
   @override
   FutureOr<UserInterface?> getUser(String id) async {
-    if (!allowCache) return null;
-
-    var cache = _userCache[id];
-    if (cache == null) return null;
-    if (cache.isExpired) {
-      await removeUser(id);
-      return null;
-    }
-    return cache.value;
+    return _getValidCache(_userCache, id, removeUser);
   }
 
   @override
@@ -105,7 +97,9 @@ class FluxMemoryAuthCache implements AuthCacheInterface {
   FutureOr<void> clearAllCache() {
     _accessTokenCache.clear();
     _authCache.clear();
+    _refreshTokenCache.clear();
     _userCache.clear();
+    _emailIdCache.clear();
   }
 
   @override
@@ -122,19 +116,27 @@ class FluxMemoryAuthCache implements AuthCacheInterface {
 
   @override
   FutureOr<JwtPayloadModel?> getRefreshToken(String token) {
-    if (!allowCache) return null;
-
-    var cache = _refreshTokenCache[token];
-    if (cache == null) return null;
-    if (cache.isExpired) {
-      removeRefreshToken(token);
-      return null;
-    }
-    return cache.value;
+    return _getValidCache(_refreshTokenCache, token, removeRefreshToken);
   }
 
   @override
   FutureOr<void> removeRefreshToken(String token) {
     _refreshTokenCache.remove(token);
+  }
+
+  @override
+  FutureOr<void> assignIdToEmail(String email, String id) async {
+    if (!allowCache) return null;
+    _emailIdCache[email] = id;
+  }
+
+  @override
+  FutureOr<String?> getIdByEmail(String email) {
+    return _emailIdCache[email];
+  }
+
+  @override
+  FutureOr<void> removeAssignedId(String email) {
+    _emailIdCache.remove(email);
   }
 }

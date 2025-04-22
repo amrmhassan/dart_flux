@@ -1,9 +1,11 @@
+import 'package:dart_flux/core/auth/auth_provider/interface/auth_cache_interface.dart';
 import 'package:dart_flux/core/auth/auth_provider/interface/user_auth_interface.dart';
 import 'package:dart_flux/core/auth/auth_provider/interface/user_interface.dart';
 import 'package:dart_flux/core/db/connection/interface/db_connection_interface.dart';
 
 abstract class AuthDbProvider {
   late DbConnectionInterface dbConnection;
+  late AuthCacheInterface cache;
   // user data
   Future<UserInterface?> userDataById(String id);
   Future<UserAuthInterface?> userAuthById(String id);

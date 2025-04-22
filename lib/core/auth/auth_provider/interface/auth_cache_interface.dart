@@ -14,16 +14,23 @@ abstract class AuthCacheInterface {
   late Duration? clearCacheEvery;
 
   FutureOr<JwtPayloadModel?> getAccessToken(String token);
-  FutureOr<void> addAccessToken(String token, JwtPayloadModel payload);
+  FutureOr<void> setAccessToken(String token, JwtPayloadModel payload);
   FutureOr<void> removeAccessToken(String token);
 
+  // for user data with id
   FutureOr<UserInterface?> getUser(String id);
-  FutureOr<void> addUser(String id, UserInterface user);
+  FutureOr<void> setUser(String id, UserInterface user);
   FutureOr<void> removeUser(String id);
 
+  // for user auth with id
   FutureOr<UserAuthInterface?> getAuth(String id);
-  FutureOr<void> addAuth(String id, UserAuthInterface auth);
+  FutureOr<void> setAuth(String id, UserAuthInterface auth);
   FutureOr<void> removeAuth(String id);
+
+  // email => id
+  FutureOr<String?> getIdByEmail(String email);
+  FutureOr<void> assignIdToEmail(String email, String id);
+  FutureOr<void> removeAssignedId(String email);
 
   // add for refresh tokens
   FutureOr<void> addRefreshToken(String token, JwtPayloadModel payload);

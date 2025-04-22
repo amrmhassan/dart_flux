@@ -1,4 +1,3 @@
-import 'package:dart_flux/core/auth/auth_provider/interface/auth_cache_interface.dart';
 import 'package:dart_flux/core/auth/auth_provider/interface/auth_db_provider.dart';
 import 'package:dart_flux/core/auth/auth_provider/interface/user_auth_interface.dart';
 import 'package:dart_flux/core/auth/authenticator/interface/auth_hashing_interface.dart';
@@ -9,7 +8,6 @@ abstract class AuthenticatorInterface {
   late JwtControllerInterface jwtController;
   late AuthDbProvider authProvider;
   late AuthHashingInterface hashing;
-  late AuthCacheInterface cache;
 
   Future<TokensModel> login(String email, String password);
   Future<TokensModel> register(
