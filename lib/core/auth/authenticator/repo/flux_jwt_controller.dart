@@ -18,16 +18,16 @@ class FluxJwtController implements JwtControllerInterface {
   JWTAlgorithm jwtAlgorithm;
 
   @override
-  String jwtSecret;
+  JWTKey jwtKey;
 
   @override
   Duration? refreshTokenExpiry;
 
   FluxJwtController({
-    required this.accessTokenExpiry,
-    required this.jwtAlgorithm,
-    required this.jwtSecret,
-    required this.refreshTokenExpiry,
+    this.accessTokenExpiry,
+    this.jwtAlgorithm = JWTAlgorithm.HS256,
+    required this.jwtKey,
+    this.refreshTokenExpiry,
   });
 
   @override
@@ -59,7 +59,7 @@ class FluxJwtController implements JwtControllerInterface {
 
     final jwt = JWT(payload.toJson(), issuer: frameworkName);
     return jwt.sign(
-      SecretKey(jwtSecret),
+      jwtKey,
       expiresIn: accessTokenExpiry,
       algorithm: jwtAlgorithm,
     );
@@ -75,7 +75,7 @@ class FluxJwtController implements JwtControllerInterface {
     );
     final jwt = JWT(payload.toJson(), issuer: frameworkName);
     return jwt.sign(
-      SecretKey(jwtSecret),
+      jwtKey,
       expiresIn: refreshTokenExpiry,
       algorithm: jwtAlgorithm,
     );
@@ -84,7 +84,7 @@ class FluxJwtController implements JwtControllerInterface {
   @override
   bool isTokenExpired(String token) {
     try {
-      JWT.verify(token, SecretKey(jwtSecret));
+      JWT.verify(token, jwtKey);
       return false;
     } on JWTExpiredException catch (_) {
       return true;
@@ -124,7 +124,7 @@ class FluxJwtController implements JwtControllerInterface {
   @override
   JwtPayloadModel verifyToken(String token, UserAuthInterface authModel) {
     try {
-      final jwt = JWT.verify(token, SecretKey(jwtSecret));
+      final jwt = JWT.verify(token, jwtKey);
       var payload = jwt.payload as Map<String, dynamic>;
       JwtPayloadModel model = JwtPayloadModel.fromJson(payload);
       // here check if the token is revoked or not from the auth model

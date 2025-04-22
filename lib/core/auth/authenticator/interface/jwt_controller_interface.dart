@@ -6,7 +6,7 @@ import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 abstract class JwtControllerInterface {
   late Duration? accessTokenExpiry;
   late Duration? refreshTokenExpiry;
-  late String jwtSecret;
+  late JWTKey jwtKey;
   late JWTAlgorithm jwtAlgorithm;
 
   String generateAccessToken(String userId);
