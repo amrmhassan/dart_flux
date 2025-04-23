@@ -113,6 +113,7 @@ class FluxAuthenticator implements AuthenticatorInterface {
     if (authModel == null) {
       throw UserNotFoundError();
     }
+    await jwtController.verifyToken(refreshToken, authModel);
     return authModel;
   }
 
@@ -126,6 +127,7 @@ class FluxAuthenticator implements AuthenticatorInterface {
     if (authModel == null) {
       throw UserNotFoundError();
     }
+    await jwtController.verifyToken(accessToken, authModel);
     return authModel;
   }
 }

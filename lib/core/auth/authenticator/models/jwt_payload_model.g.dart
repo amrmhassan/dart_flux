@@ -24,5 +24,5 @@ Map<String, dynamic> _$JwtPayloadModelToJson(JwtPayloadModel instance) =>
 
 const _$TokenTypeEnumMap = {
   TokenType.access: 'access',
-  TokenType.refresh: 'access',
+  TokenType.refresh: 'refresh',
 };

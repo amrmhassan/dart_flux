@@ -41,6 +41,6 @@ class JwtPayloadModel {
 enum TokenType {
   @JsonValue('access')
   access,
-  @JsonValue('access')
+  @JsonValue('refresh')
   refresh,
 }

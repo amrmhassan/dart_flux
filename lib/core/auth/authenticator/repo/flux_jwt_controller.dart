@@ -8,6 +8,7 @@ import 'package:dart_flux/core/auth/authenticator/models/tokens_model.dart';
 import 'package:dart_flux/core/errors/error_string.dart';
 import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/errors/types/auth_errors.dart';
+import 'package:dart_flux/core/server/execution/repo/server.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 
 class FluxJwtController implements JwtControllerInterface {
@@ -141,6 +142,7 @@ class FluxJwtController implements JwtControllerInterface {
         code: errorCode.jwtExpired,
       );
     } catch (e, s) {
+      if (e is ServerError) rethrow;
       throw ServerError(
         errorString.invalidToken,
         status: HttpStatus.unauthorized,

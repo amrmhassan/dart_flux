@@ -5,6 +5,7 @@ import 'package:dart_flux/core/auth/auth_provider/interface/user_auth_interface.
 import 'package:dart_flux/core/auth/auth_provider/interface/user_interface.dart';
 import 'package:dart_flux/core/auth/auth_provider/models/flux_user.dart';
 import 'package:dart_flux/core/auth/auth_provider/models/flux_user_auth.dart';
+import 'package:dart_flux/core/auth/auth_provider/repo/flux_memory_auth_cache.dart';
 import 'package:dart_flux/core/auth/constants/auth_constants.dart';
 import 'package:dart_flux/core/db/connection/interface/db_connection_interface.dart';
 import 'package:dart_flux/core/errors/types/auth_errors.dart';
@@ -14,7 +15,9 @@ import 'package:mongo_dart/mongo_dart.dart';
 // how to inject a type to a class and the type is a child of another class
 // like the dbConnection here will always be a MongoDbConnection not a DbConnectionInterface
 class MongoAuthProvider implements AuthDbProvider {
-  MongoAuthProvider(this._dbConnection, {required this.cache});
+  MongoAuthProvider(this._dbConnection, {AuthCacheInterface? cache}) {
+    this.cache = cache ?? FluxMemoryAuthCache();
+  }
 
   CollRefMongo get authData =>
       dbConnection.collection(AuthCollections.authData);
@@ -137,5 +140,5 @@ class MongoAuthProvider implements AuthDbProvider {
   }
 
   @override
-  AuthCacheInterface cache;
+  late AuthCacheInterface cache;
 }
