@@ -17,6 +17,7 @@ dependencies:
   mongo_dart: ^0.10.4
   argon2: ^1.0.1
   dart_jsonwebtoken: ^3.1.1
+  path: ^1.9.1
 
 
 dev_dependencies:
