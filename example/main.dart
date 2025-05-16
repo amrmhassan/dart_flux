@@ -1,6 +1,14 @@
-import 'package:dart_flux/core/misc/cache/cache_manager.dart';
+import 'dart:io';
+
+import 'package:dart_flux/core/webhook/webhook_handler.dart';
+import 'package:dart_flux/dart_flux.dart';
 
 void main(List<String> args) async {
-  var value = CacheManager.instance.getItem<String>('user');
-  print(value);
+  final webhookHandler = WebhookHandler();
+
+  // Get the handler function to register with your router
+  ProcessorHandler handler = webhookHandler.handler;
+  Router router = Router().post('/webhook', handler);
+  Server server = Server(InternetAddress.anyIPv4, 3000, router);
+  await server.run();
 }
