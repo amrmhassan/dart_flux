@@ -8,6 +8,7 @@ import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/repo/handler.dart';
 import 'package:dart_flux/core/server/routing/repo/router.dart';
+import 'package:dart_flux/utils/strings_matcher.dart';
 
 /// A base class that represents a router in the application.
 /// This class handles processing requests by managing pipelines (upper, main, and lower)
@@ -105,5 +106,42 @@ abstract class RouterBase extends BasePath implements RequestProcessor {
     if (handlerIsAMust && !foundHandler) return [];
 
     return mainProcessors;
+  }
+
+  @override
+  List<Handler> wrongMethodProcessors(String path, HttpMethod method) {
+    for (var entity in mainPipeline) {
+      if (entity is Handler) {
+        if (entity.finalPath == path && entity.method != method) {
+          return [entity];
+        }
+      }
+    }
+    return [];
+  }
+
+  @override
+  List<Handler> wrongPathProcessors(String path, HttpMethod method) {
+    Map<double, Handler> handlers = {};
+    Map<double, Handler> handlersRightMethod = {};
+    for (var entity in mainPipeline) {
+      if (entity is Handler) {
+        double match = StringsMatcher.compare(path, entity.finalPath ?? '');
+        if (match >= 50) {
+          handlers[match] = entity;
+          if (entity.method == method) {
+            handlersRightMethod[match] = entity;
+            break;
+          }
+        }
+      }
+    }
+    if (handlersRightMethod.isNotEmpty) {
+      handlers = handlersRightMethod;
+    }
+    handlers = Map.fromEntries(
+      handlers.entries.toList()..sort((a, b) => b.key.compareTo(a.key)),
+    );
+    return handlers.values.toList();
   }
 }

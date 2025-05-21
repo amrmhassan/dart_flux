@@ -1,4 +1,5 @@
 import 'package:dart_flux/core/server/routing/models/handler_base.dart';
+import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
@@ -31,5 +32,15 @@ class Handler extends HandlerBase {
     middleware.parent = this;
     lowerMiddleware.add(middleware);
     return this;
+  }
+
+  @override
+  List<Handler> wrongMethodProcessors(String path, HttpMethod method) {
+    throw UnimplementedError();
+  }
+
+  @override
+  List<Handler> wrongPathProcessors(String path, HttpMethod method) {
+    throw UnimplementedError();
   }
 }

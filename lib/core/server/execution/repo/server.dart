@@ -168,6 +168,7 @@ class Server implements ServerInterface {
       fluxLogger: logger,
       onNotFound: onNotFound,
       entities: entities,
+      requestProcessor: requestProcessor,
     ).run();
   }
 

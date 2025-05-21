@@ -4,9 +4,11 @@ import 'dart:io';
 import 'package:dart_flux/constants/global.dart';
 import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.dart';
 import 'package:dart_flux/core/server/routing/interface/http_entity.dart';
+import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:dart_flux/core/server/routing/models/flux_response.dart';
+import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
@@ -40,6 +42,8 @@ class PipelineRunner {
   // Optional fallback handler for unmatched routes.
   ProcessorHandler? onNotFound;
 
+  final RequestProcessor _requestProcessor;
+
   PipelineRunner({
     required List<Middleware> systemUpper,
     required List<LowerMiddleware> systemLower,
@@ -50,13 +54,15 @@ class PipelineRunner {
     required List<RoutingEntity> entities,
     required this.fluxLogger,
     required this.onNotFound,
+    required RequestProcessor requestProcessor,
   }) : _request = request,
        _response = response,
        _entities = entities,
        _lowerMiddlewares = lowerMiddlewares,
        _upperMiddlewares = upperMiddlewares,
        _systemLower = systemLower,
-       _systemUpper = systemUpper;
+       _systemUpper = systemUpper,
+       _requestProcessor = requestProcessor;
 
   /// Handles any errors thrown in middleware or routing,
   /// sends a proper error response, and logs the error/stack trace.
@@ -153,16 +159,62 @@ class PipelineRunner {
       }
 
       if (isNotFound) {
-        if (onNotFound != null) {
-          return onNotFound!(_request, _response, {});
-        }
-        return SendResponse.notFound(_response, 'request path not found');
+        fluxLogger?.rawLog('request path not found');
+        return await _handleNotFound();
       }
 
       return _response;
     } catch (e, s) {
       return _error(e, s);
     }
+  }
+
+  Future<FluxResponse> _handleNotFound() async {
+    if (onNotFound != null) {
+      return onNotFound!(_request, _response, {});
+    }
+    String path = _request.uri.path;
+    HttpMethod httpMethod = _request.method;
+
+    var wrongMethod = _requestProcessor.wrongMethodProcessors(
+      _request.path,
+      httpMethod,
+    );
+    String errorMsg = 'request path not found';
+    int status = HttpStatus.notFound;
+
+    if (wrongMethod.isNotEmpty) {
+      String description =
+          'method is wrong, did you mean ${wrongMethod[0].method?.name}?';
+      Map<String, dynamic> extra = {
+        'suggestedMethod': wrongMethod[0].method!.name,
+        'suggestedPath': wrongMethod[0].finalPath ?? '',
+      };
+      return SendResponse.error(
+        _response,
+        errorMsg,
+        status: status,
+        description: description,
+        extra: extra,
+      );
+    }
+    var wrongPath = _requestProcessor.wrongPathProcessors(path, httpMethod);
+    if (wrongPath.isNotEmpty) {
+      String description =
+          'path is wrong, did you mean ${wrongPath[0].finalPath}?';
+      Map<String, dynamic> extra = {
+        'suggestedMethod': wrongPath[0].method!.name,
+        'suggestedPath': wrongPath[0].finalPath ?? '',
+      };
+      return SendResponse.error(
+        _response,
+        errorMsg,
+        status: status,
+        description: description,
+        extra: extra,
+      );
+    }
+    return SendResponse.error(_response, errorMsg, status: status);
   }
 
   /// Tracks if the response was closed before lower/system middlewares.

@@ -2,6 +2,7 @@ import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/interface/routing_entity.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
+import 'package:dart_flux/core/server/routing/repo/handler.dart';
 
 /// A middleware class that extends [RoutingEntity] and implements [RequestProcessor].
 /// Middleware is used to process HTTP requests and responses before or after they pass through a handler.
@@ -30,5 +31,15 @@ class LowerMiddleware extends RoutingEntity implements RequestProcessor {
       return [this]; // Include this middleware if it matches
     }
     return [];
+  }
+
+  @override
+  List<Handler> wrongMethodProcessors(String path, HttpMethod method) {
+    throw UnimplementedError();
+  }
+
+  @override
+  List<Handler> wrongPathProcessors(String path, HttpMethod method) {
+    throw UnimplementedError();
   }
 }

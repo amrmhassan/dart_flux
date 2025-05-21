@@ -31,6 +31,8 @@ class SendResponse {
     FluxResponse response,
     Object err, {
     int? status,
+    String? description,
+    dynamic extra,
   }) {
     if (err is ServerError) {
       // If the error is a ServerError, return it as a JSON response.
@@ -40,6 +42,8 @@ class SendResponse {
       ServerError e = ServerError(
         err.toString(),
         status: status ?? HttpStatus.internalServerError,
+        description: description,
+        extra: extra,
       );
       return error(response, e);
     }
