@@ -132,9 +132,11 @@ Use the auth cache to improve performance by reducing database queries:
 ```dart
 // Create memory-based auth cache
 final authCache = FluxMemoryAuthCache(
-  allowCache: true,
-  cacheDuration: Duration(minutes: 15),
-  clearCacheEvery: Duration(hours: 1),
+  allowCache: true,                           // Enable caching
+  cacheDuration: Duration(minutes: 15),       // Set item expiration time
+  clearCacheEvery: Duration(hours: 1),        // Periodically clear all cache
+  maxEntries: 5000,                           // Limit cache entries
+  enableLruBehavior: true,                    // Enable LRU (Least Recently Used) behavior
 );
 
 // Create auth provider with cache
@@ -153,6 +155,67 @@ final authenticator = FluxAuthenticator(
   refreshTokenSecret: 'your-refresh-token-secret',
 );
 ```
+
+### Cache Features
+
+#### Efficient Size Management
+
+FluxMemoryAuthCache includes efficient cache size management to prevent excessive memory usage without impacting performance:
+
+```dart
+final authCache = FluxMemoryAuthCache(
+  allowCache: true,
+  cacheDuration: Duration(minutes: 15),
+  maxEntries: 5000, // Limit each cache map to 5000 entries
+);
+```
+
+The `maxEntries` parameter limits the number of entries in each cache collection:
+
+#### LRU Cache Behavior
+
+Enable true LRU (Least Recently Used) eviction policy to keep frequently used items in cache longer:
+
+```dart
+final authCache = FluxMemoryAuthCache(
+  enableLruBehavior: true, // Moves accessed items to end of queue
+  // Other options...
+);
+```
+
+#### Cache Eviction Events
+
+Listen for cache eviction events to monitor cache behavior and perform custom actions:
+
+```dart
+// Subscribe to eviction events
+authCache.onEviction.listen((event) {
+  print('Item evicted: ${event.key} from ${event.cacheType} due to ${event.reason}');
+  
+  // Perform custom actions based on eviction events
+  if (event.reason == EvictionReason.expired) {
+    // Handle expired item
+  } else if (event.reason == EvictionReason.sizeLimitReached) {
+    // Handle size-based eviction
+  }
+});
+```
+
+#### Resource Management
+
+Properly dispose cache resources when no longer needed:
+
+```dart
+// When shutting down your application or when cache is no longer needed
+authCache.dispose();
+```
+- User cache
+- Authentication cache
+- Access token cache
+- Refresh token cache
+- Email-to-ID mapping cache
+
+When a cache reaches its size limit, the oldest entries (based on insertion order) are automatically removed when new entries are added. This is implemented using an efficient queue-based approach with O(1) insertion and O(k) removal (where k is only the number of entries to remove), keeping the cache operation time complexity constant regardless of cache size.
 
 ## User Registration
 

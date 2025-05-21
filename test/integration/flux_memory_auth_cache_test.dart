@@ -128,6 +128,32 @@ void main() {
       final result = await cache.getAccessToken(testToken);
       expect(result, isNull);
     });
+
+    test('respects maxEntries limit', () async {
+      final limitedCache = FluxMemoryAuthCache(
+        allowCache: true,
+        maxEntries: 3,
+      ); // Add more items than the max limit
+      for (int i = 0; i < 5; i++) {
+        final token = 'token$i';
+        final payload = JwtPayloadModel(
+          userId: 'user$i',
+          issuedAt: DateTime.now(),
+          type: TokenType.access,
+        );
+        limitedCache.setAccessToken(token, payload);
+        await Future.delayed(
+          Duration(milliseconds: 10),
+        ); // Ensure sequence is preserved
+      }
+
+      // The oldest 2 items should be removed (FIFO queue behavior)
+      expect(await limitedCache.getAccessToken('token0'), isNull);
+      expect(await limitedCache.getAccessToken('token1'), isNull);
+      expect(await limitedCache.getAccessToken('token2'), isNotNull);
+      expect(await limitedCache.getAccessToken('token3'), isNotNull);
+      expect(await limitedCache.getAccessToken('token4'), isNotNull);
+    });
   });
 }
 

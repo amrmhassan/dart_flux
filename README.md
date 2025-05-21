@@ -10,7 +10,7 @@ Dart Flux provides a complete solution for building robust backend applications 
 
 - 🚀 **Fast Server Implementation**: Lightweight HTTP server with optimized performance
 - 🛣️ **Intuitive Routing**: Simple and flexible routing system with middleware support
-- 🔐 **Authentication**: Built-in authentication with JWT support
+- 🔐 **Authentication**: Built-in authentication with JWT support and efficient LRU caching
 - 📁 **File Management**: Easy file handling and storage operations
 - 💾 **Database Integration**: MongoDB support with simple abstractions
 - 🔄 **Webhooks**: Support for webhook integrations with GitHub and other platforms

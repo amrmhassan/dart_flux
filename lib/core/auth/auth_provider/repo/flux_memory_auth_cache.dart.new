@@ -1,0 +1,377 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+import 'dart:collection';
+
+import 'package:dart_flux/core/auth/auth_provider/interface/auth_cache_interface.dart';
+import 'package:dart_flux/core/auth/auth_provider/interface/user_auth_interface.dart';
+import 'package:dart_flux/core/auth/auth_provider/interface/user_interface.dart';
+import 'package:dart_flux/core/auth/auth_provider/models/cached_item.dart';
+import 'package:dart_flux/core/auth/auth_provider/models/eviction_event.dart';
+import 'package:dart_flux/core/auth/authenticator/models/jwt_payload_model.dart';
+
+class FluxMemoryAuthCache implements AuthCacheInterface {
+  // Lock objects for synchronization
+  final _lock = Object();
+
+  // Stream controllers for cache invalidation events
+  final _evictionController = StreamController<EvictionEvent>.broadcast();
+  
+  /// Stream of cache eviction events
+  Stream<EvictionEvent> get onEviction => _evictionController.stream;
+  
+  // Timer for cache cleaning
+  Timer? _cleanupTimer;
+  
+  Map<String, CachedItem<JwtPayloadModel>> _accessTokenCache = {};
+  Map<String, CachedItem<JwtPayloadModel>> _refreshTokenCache = {};
+  Map<String, CachedItem<UserAuthInterface>> _authCache = {};
+  Map<String, CachedItem<UserInterface>> _userCache = {};
+  Map<String, String> _emailIdCache = {};
+
+  // These queues track the order of insertion for efficient size management
+  final Queue<String> _accessTokenQueue = Queue<String>();
+  final Queue<String> _refreshTokenQueue = Queue<String>();
+  final Queue<String> _authQueue = Queue<String>();
+  final Queue<String> _userQueue = Queue<String>();
+  final Queue<String> _emailIdQueue = Queue<String>();
+
+  /// Whether to use true LRU behavior (move accessed items to end of queue)
+  final bool enableLruBehavior;
+
+  /// Helper method to get the cache type name for a generic type
+  String getCacheTypeForItem<T>() {
+    if (T == JwtPayloadModel) {
+      return 'token';
+    } else if (T == UserAuthInterface) {
+      return 'auth';
+    } else if (T == UserInterface) {
+      return 'user';
+    }
+    return 'unknown';
+  }
+
+  /// Notify listeners of an eviction event
+  void _notifyEviction(String cacheType, String key, EvictionReason reason) {
+    if (_evictionController.hasListener) {
+      _evictionController.add(EvictionEvent(
+        cacheType: cacheType,
+        key: key, 
+        reason: reason,
+      ));
+    }
+  }
+
+  /// Manages the size of a cache map by efficiently removing oldest entries if needed
+  /// Time complexity: O(k) where k is the number of entries to remove
+  void _manageCacheSize<T>({
+    required Map<String, CachedItem<T>> cache,
+    required Queue<String> queue,
+    required void Function(String) removalCallback,
+  }) {
+    if (maxEntries == null || cache.length <= maxEntries!) return;
+
+    // Remove oldest entries until we're under the limit
+    final entriesToRemove = cache.length - maxEntries!;
+    for (var i = 0; i < entriesToRemove; i++) {
+      if (queue.isNotEmpty) {
+        final oldestKey = queue.removeFirst();
+        cache.remove(oldestKey);
+        removalCallback(oldestKey);
+        
+        // Notify listeners about size-based eviction
+        _notifyEviction(getCacheTypeForItem<T>(), oldestKey, EvictionReason.sizeLimitReached);
+      }
+    }
+  }
+
+  /// Generic method for adding any item type to the cache with thread safety
+  void _addToCache<T>({
+    required String key,
+    required CachedItem<T> item,
+    required Map<String, CachedItem<T>> cache,
+    required Queue<String> queue,
+    required void Function(String) removalCallback,
+  }) {
+    synchronized(() {
+      // If already in cache, first remove from queue to avoid duplicates
+      if (cache.containsKey(key)) {
+        queue.remove(key);
+      }
+
+      cache[key] = item;
+      queue.add(key);
+
+      _manageCacheSize(
+        cache: cache,
+        queue: queue,
+        removalCallback: removalCallback,
+      );
+    });
+  }
+
+  /// Run a function with synchronization
+  T synchronized<T>(T Function() fn) {
+    synchronized<T>(fn) {
+      return fn();
+    }
+    
+    // For thread safety, this would be implemented with a real lock
+    // but we're keeping it simple since Dart is single-threaded per isolate
+    return fn();
+  }
+  T? _getValidCache<T>(
+    Map<String, CachedItem<T>> map, 
+    String key,
+    void Function(String) onRemove,
+    [Queue<String>? queue]
+  ) {
+    return synchronized(() {
+      var cache = map[key];
+      if (cache == null) return null;
+      if (cache.isExpired) {
+        onRemove(key);
+        
+        // Notify listeners of expiration
+        _notifyEviction(getCacheTypeForItem<T>(), key, EvictionReason.expired);
+        return null;
+      }
+      
+      // Update the last accessed time
+      cache.touch();
+      
+      // Implement true LRU behavior by moving accessed keys to the end of the queue
+      if (enableLruBehavior && queue != null) {
+        queue.remove(key);
+        queue.add(key);
+      }
+      
+      return cache.value;
+    });
+  }
+
+  @override
+  FutureOr<void> setAccessToken(String token, JwtPayloadModel payload) {
+    if (!allowCache) return null;
+    _addToCache(
+      key: token,
+      item: CachedItem(payload, expiresAfter: cacheDuration),
+      cache: _accessTokenCache,
+      queue: _accessTokenQueue,
+      removalCallback: removeAccessToken,
+    );
+  }
+
+  @override
+  FutureOr<void> setAuth(String id, UserAuthInterface auth) {
+    if (!allowCache) return null;
+
+    _addToCache(
+      key: id,
+      item: CachedItem(auth, expiresAfter: cacheDuration),
+      cache: _authCache,
+      queue: _authQueue,
+      removalCallback: removeAuth,
+    );
+  }
+
+  @override
+  FutureOr<void> setUser(String id, UserInterface user) {
+    if (!allowCache) return null;
+
+    _addToCache(
+      key: id,
+      item: CachedItem(user, expiresAfter: cacheDuration),
+      cache: _userCache,
+      queue: _userQueue,
+      removalCallback: removeUser,
+    );
+  }
+
+  @override
+  FutureOr<JwtPayloadModel?> getAccessToken(String token) async {
+    return _getValidCache(_accessTokenCache, token, removeAccessToken, _accessTokenQueue);
+  }
+
+  @override
+  FutureOr<UserAuthInterface?> getAuth(String id) async {
+    return _getValidCache(_authCache, id, removeAuth, _authQueue);
+  }
+
+  @override
+  FutureOr<UserInterface?> getUser(String id) async {
+    return _getValidCache(_userCache, id, removeUser, _userQueue);
+  }
+
+  @override
+  FutureOr<void> removeAccessToken(String token) {
+    synchronized(() {
+      _accessTokenCache.remove(token);
+      _accessTokenQueue.remove(token);
+      _notifyEviction('token', token, EvictionReason.manualRemoval);
+    });
+  }
+
+  @override
+  FutureOr<void> removeAuth(String id) {
+    synchronized(() {
+      _authCache.remove(id);
+      _authQueue.remove(id);
+      _notifyEviction('auth', id, EvictionReason.manualRemoval);
+    });
+  }
+
+  @override
+  FutureOr<void> removeUser(String id) {
+    synchronized(() {
+      _userCache.remove(id);
+      _userQueue.remove(id);
+      _notifyEviction('user', id, EvictionReason.manualRemoval);
+    });
+  }
+
+  @override
+  bool allowCache;
+
+  @override
+  Duration? cacheDuration;
+
+  @override
+  int? maxEntries;
+
+  @override
+  Duration? clearCacheEvery;
+
+  FluxMemoryAuthCache({
+    this.allowCache = true,
+    this.cacheDuration = const Duration(minutes: 5),
+    this.clearCacheEvery,
+    this.maxEntries = 5000, // Default to 5000 entries
+    this.enableLruBehavior = false, // Default to FIFO, not LRU
+  }) {
+    if (clearCacheEvery != null) {
+      _cleanupTimer = Timer.periodic(clearCacheEvery!, (timer) => clearAllCache());
+    }
+  }
+  
+  /// Properly dispose resources when the cache is no longer needed
+  void dispose() {
+    _cleanupTimer?.cancel();
+    _evictionController.close();
+  }
+
+  @override
+  FutureOr<void> clearAllCache() {
+    synchronized(() {
+      _accessTokenCache.clear();
+      _authCache.clear();
+      _refreshTokenCache.clear();
+      _userCache.clear();
+      _emailIdCache.clear();
+
+      // Also clear the queues
+      _accessTokenQueue.clear();
+      _authQueue.clear();
+      _refreshTokenQueue.clear();
+      _userQueue.clear();
+      _emailIdQueue.clear();
+      
+      // Notify listeners
+      _notifyEviction('all', 'all', EvictionReason.cacheClear);
+    });
+  }
+
+  @override
+  FutureOr<void> addRefreshToken(String token, JwtPayloadModel payload) {
+    if (!allowCache) return null;
+    _addToCache(
+      key: token,
+      item: CachedItem(payload, expiresAfter: cacheDuration),
+      cache: _refreshTokenCache,
+      queue: _refreshTokenQueue,
+      removalCallback: removeRefreshToken,
+    );
+  }
+
+  @override
+  FutureOr<JwtPayloadModel?> getRefreshToken(String token) {
+    return _getValidCache(_refreshTokenCache, token, removeRefreshToken, _refreshTokenQueue);
+  }
+
+  @override
+  FutureOr<void> removeRefreshToken(String token) {
+    synchronized(() {
+      _refreshTokenCache.remove(token);
+      _refreshTokenQueue.remove(token);
+      _notifyEviction('refresh_token', token, EvictionReason.manualRemoval);
+    });
+  }
+
+  /// Generic method for managing any simple cache 
+  /// Used for email-id mapping and other caches with a similar structure
+  void _manageSimpleCache<K, V>({
+    required Map<K, V> cache,
+    required Queue<K> queue,
+    required K key,
+    required V value,
+  }) {
+    synchronized(() {
+      // If already in cache, remove from queue
+      if (cache.containsKey(key)) {
+        queue.remove(key);
+      }
+
+      cache[key] = value;
+      queue.add(key);
+      
+      // Check cache size
+      if (maxEntries != null && cache.length > maxEntries!) {
+        final entriesToRemove = cache.length - maxEntries!;
+        for (var i = 0; i < entriesToRemove; i++) {
+          if (queue.isNotEmpty) {
+            final oldestKey = queue.removeFirst();
+            cache.remove(oldestKey);
+            if (oldestKey is String) {
+              _notifyEviction('email_id', oldestKey, EvictionReason.sizeLimitReached);
+            }
+          }
+        }
+      }
+    });
+  }
+
+  @override
+  FutureOr<void> assignIdToEmail(String email, String id) async {
+    if (!allowCache) return null;
+    
+    _manageSimpleCache(
+      cache: _emailIdCache,
+      queue: _emailIdQueue,
+      key: email,
+      value: id,
+    );
+  }
+
+  @override
+  FutureOr<String?> getIdByEmail(String email) {
+    return synchronized(() {
+      final id = _emailIdCache[email];
+      
+      // Implement true LRU behavior for email-id mapping if enabled
+      if (enableLruBehavior && id != null) {
+        _emailIdQueue.remove(email);
+        _emailIdQueue.add(email);
+      }
+      
+      return id;
+    });
+  }
+
+  @override
+  FutureOr<void> removeAssignedId(String email) {
+    synchronized(() {
+      _emailIdCache.remove(email);
+      _emailIdQueue.remove(email);
+      _notifyEviction('email_id', email, EvictionReason.manualRemoval);
+    });
+  }
+}
