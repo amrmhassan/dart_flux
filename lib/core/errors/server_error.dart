@@ -61,14 +61,12 @@ class ServerError implements Exception {
   /// Serializes the error into a JSON-compatible map.
   /// This is useful for sending structured error responses to clients.
   Map<String, dynamic> toClient() {
-    StackTrace trace = this.trace ?? StackTrace.current;
     return {
       'msg': msg.toString(),
       'code': code,
       'status': status,
       'description': description?.toString(),
       'extra': extra,
-      'stack': trace.toString(),
     };
   }
 
