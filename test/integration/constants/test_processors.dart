@@ -38,7 +38,7 @@ class TestProcessors {
     pathArgs,
   ) async {
     var body = await request.bytesForm(acceptFormFiles: false);
-    String name = body.getField('name')!.value;
+    String name = body.getField('name')[0].value;
 
     return SendResponse.data(response, 'user name is $name');
   };
@@ -48,7 +48,7 @@ class TestProcessors {
     pathArgs,
   ) async {
     var body = await request.bytesForm();
-    var file = body.getFile('file')!;
+    var file = body.getFile('file')[0];
 
     return SendResponse.data(response, file.bytes.length);
   };
@@ -58,7 +58,7 @@ class TestProcessors {
     pathArgs,
   ) async {
     var body = await request.form(acceptFormFiles: false);
-    String name = body.getField('name')!.value;
+    String name = body.getField('name')[0].value;
 
     return SendResponse.data(response, 'user name is $name');
   };
@@ -68,7 +68,7 @@ class TestProcessors {
     pathArgs,
   ) async {
     var body = await request.form();
-    File file = body.getFile('file')!;
+    File file = body.getFile('file')[0];
     int length = file.lengthSync();
     try {
       file.parent.deleteSync(recursive: true);
