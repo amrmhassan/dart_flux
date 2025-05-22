@@ -18,6 +18,8 @@ dependencies:
   argon2: ^1.0.1
   dart_jsonwebtoken: ^3.1.1
   path: ^1.9.1
+  hex: ^0.2.0
+  crypto: ^3.0.6
 
 
 dev_dependencies:
