@@ -10,3 +10,8 @@
 ## 0.0.3
 
 * Basic Web server and a db connector
+
+
+## 0.0.4
+
+* basic auth service

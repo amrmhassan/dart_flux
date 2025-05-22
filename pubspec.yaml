@@ -2,7 +2,7 @@ name: dart_flux
 description: >
   A lightweight and scalable Dart backend framework with built-in 
   web server, authentication, file management, database etc...
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/amrmhassan/dart_flux.git
 
 environment:
