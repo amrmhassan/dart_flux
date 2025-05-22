@@ -3,6 +3,7 @@ import 'package:dart_flux/core/server/routing/interface/request_processor.dart';
 import 'package:dart_flux/core/server/routing/models/http_method.dart';
 import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/middleware.dart';
+import 'package:dart_flux/core/server/routing/models/model.dart';
 import 'package:dart_flux/core/server/routing/models/processor.dart';
 import 'package:dart_flux/core/server/routing/models/router_base.dart';
 import 'package:dart_flux/core/server/routing/repo/crud_router.dart';
@@ -26,8 +27,8 @@ class Router extends RouterBase {
   factory Router.path(String path) {
     return Router()..setPath(path);
   }
-  factory Router.crud(String entity, {ModelRepositoryInterface? repo}) {
-    return CrudRouter.init(entity, repo: repo);
+  factory Router.crud(String entity, ModelRepositoryInterface<Model> repo) {
+    return CrudRouter.init(entity, repo);
   }
 
   //? adding request processors

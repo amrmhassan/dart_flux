@@ -10,14 +10,13 @@ void main(List<String> args) async {
 
   // Get the handler function to register with your router
   ProcessorHandler handler = webhookHandler.handler;
-  Router router = Router()
-      .post('/webhook', handler)
-      .post('test', (req, res, pathArgs) {
-        return res.write('Hello World');
-      })
-      .get('test', (req, res, pathArgs) {
-        return res.write('Hello World');
-      });
+  Router router = Router().post('/webhook', handler).post('test', (
+    req,
+    res,
+    pathArgs,
+  ) async {
+    return res.success('Hello World');
+  });
   Server server = Server(InternetAddress.anyIPv4, 4000, router);
   await server.run();
 }

@@ -24,7 +24,7 @@ abstract class FormDataInterface {
   /// the field with the specified [key], or `null` if no matching field is found.
   ///
   /// [key]: The identifier of the form field.
-  FormFieldInterface? getField(String key);
+  List<FormFieldInterface> getField(String key);
 
   /// Retrieves a specific file by its key.
   ///

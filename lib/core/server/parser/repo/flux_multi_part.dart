@@ -159,8 +159,14 @@ class FluxMultiPart implements MultiPartInterface {
             );
           }
           // Convert the file part to bytes and save it.
-          var filePath = await _partToBytes(broadCast, contentType);
-          BytesFormField result = BytesFormField(name, filePath);
+          var fileBytes = await _partToBytes(broadCast, contentType);
+          String? fileName = _extractFileName(disposition);
+          Map<String, dynamic> meta = {};
+          meta['contentType'] = contentType;
+          meta['fileName'] = fileName;
+          meta['fileSize'] = fileBytes.length;
+
+          BytesFormField result = BytesFormField(name, fileBytes, meta: meta);
           files.add(result);
         }
       }

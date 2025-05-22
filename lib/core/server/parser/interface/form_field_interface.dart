@@ -15,10 +15,11 @@ class FormFieldInterface {
   /// This holds the actual data that was submitted in the form. The value can
   /// be of any type, depending on the form field (e.g., String, number, boolean).
   final dynamic value;
+  final Map<String, dynamic>? meta;
 
   /// Constructor for initializing a form field with a key and value.
   ///
   /// [key]: The unique identifier for the form field.
   /// [value]: The data entered into the form field by the user.
-  FormFieldInterface(this.key, this.value);
+  FormFieldInterface(this.key, this.value, {this.meta});
 }

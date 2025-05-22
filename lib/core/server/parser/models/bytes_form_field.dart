@@ -16,10 +16,12 @@ class BytesFormField extends FormFieldInterface {
   /// This list contains the byte data of the file that was submitted as part
   /// of a multipart form request.
   final List<int> bytes;
+  final Map<String, dynamic>? meta;
 
   /// Creates an instance of [BytesFormField].
   ///
   /// - [key]: The key for the form field.
   /// - [bytes]: The byte data of the file field.
-  BytesFormField(this.key, this.bytes) : super(key, bytes);
+  BytesFormField(this.key, this.bytes, {this.meta})
+    : super(key, bytes, meta: meta);
 }

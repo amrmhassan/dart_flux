@@ -46,6 +46,12 @@ class FluxResponse extends HttpEntity {
     return this;
   }
 
+  FluxResponse success(Object? object) {
+    return write(object, code: 200);
+  }
+
+  /// success response
+
   /// Adds the provided list of bytes to the response body with the specified status code.
   ///
   /// Throws an error if the response has already been closed.

@@ -37,11 +37,8 @@ class BytesFormData extends FormDataInterface {
   ///
   /// - [key]: The key associated with the form field.
   @override
-  FormFieldInterface? getField(String key) {
-    return fields.cast<TextFormField?>().firstWhere(
-      (element) => element?.key == key,
-      orElse: () => null,
-    );
+  List<FormFieldInterface> getField(String key) {
+    return fields.where((element) => element.key == key).toList();
   }
 
   /// Retrieves a [BytesFormField] by its key.
@@ -52,11 +49,9 @@ class BytesFormData extends FormDataInterface {
   ///
   /// - [key]: The key associated with the file field.
   @override
-  BytesFormField? getFile(String key) {
-    BytesFormField? file = files.cast<BytesFormField?>().firstWhere(
-      (element) => element?.key == key,
-      orElse: () => null,
-    );
+  List<BytesFormField> getFile(String key) {
+    List<BytesFormField> file =
+        files.where((element) => element.key == key).toList();
     return file;
   }
 }

@@ -9,6 +9,7 @@ class FileFormField extends FormFieldInterface {
   ///
   /// This key corresponds to the field's name in the form, used for identifying
   /// the field in the form data.
+  @override
   final String? key;
 
   /// The file path where the uploaded file is stored.

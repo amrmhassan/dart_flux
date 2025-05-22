@@ -16,6 +16,7 @@ class FormData extends FormDataInterface {
   ///
   /// This list contains the textual form fields where each field consists of
   /// a key-value pair representing the field name and its value.
+  @override
   final List<TextFormField> fields;
 
   /// A list of file form fields submitted in the form.
@@ -23,6 +24,7 @@ class FormData extends FormDataInterface {
   /// This list contains file form fields, each representing a file uploaded
   /// as part of the form submission. Each file field consists of a key (field
   /// name) and the file path where the file is stored.
+  @override
   final List<FileFormField> files;
 
   /// Creates an instance of [FormData].
@@ -38,11 +40,8 @@ class FormData extends FormDataInterface {
   ///
   /// Returns the corresponding [FormFieldInterface] if found, otherwise `null`.
   @override
-  FormFieldInterface? getField(String key) {
-    return fields.cast<TextFormField?>().firstWhere(
-      (element) => element?.key == key,
-      orElse: () => null,
-    );
+  List<FormFieldInterface> getField(String key) {
+    return fields.where((element) => element.key == key).toList();
   }
 
   /// Retrieves the file corresponding to a file form field by its key.
@@ -52,15 +51,13 @@ class FormData extends FormDataInterface {
   /// Returns a [File] object pointing to the file on disk, or `null` if the
   /// file cannot be found.
   @override
-  File? getFile(String key) {
-    String? filePath =
+  List<File> getFile(String key) {
+    var filesPaths =
         files
-            .cast<FileFormField?>()
-            .firstWhere((element) => element?.key == key, orElse: () => null)
-            ?.value;
-    if (filePath == null) {
-      return null;
-    }
-    return File(filePath);
+            .where((element) => element.key == key)
+            .map((e) => File(e.value))
+            .toList();
+
+    return filesPaths;
   }
 }

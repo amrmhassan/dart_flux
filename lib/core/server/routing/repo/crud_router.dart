@@ -1,12 +1,11 @@
 import 'package:dart_flux/core/server/routing/interface/model_repository_interface.dart';
+import 'package:dart_flux/core/server/routing/models/model.dart';
 import 'package:dart_flux/core/server/routing/repo/router.dart';
-import 'package:dart_flux/core/server/routing/repo/test_model_repository.dart';
 import 'package:dart_flux/core/server/utils/send_response.dart';
 
 class CrudRouter {
-  static Router init(String entity, {ModelRepositoryInterface? repo}) {
-    ModelRepositoryInterface finalRepo = repo ?? TestModelRepository();
-    return generateCrudRouter(Router.path(entity), finalRepo);
+  static Router init(String entity, ModelRepositoryInterface<Model> repo) {
+    return generateCrudRouter(Router.path(entity), repo);
   }
 
   static Router generateCrudRouter(
