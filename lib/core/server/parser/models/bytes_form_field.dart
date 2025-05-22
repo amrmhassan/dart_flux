@@ -1,4 +1,6 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:dart_flux/core/server/parser/interface/form_field_interface.dart';
+import 'package:dart_flux/core/server/parser/models/bytes_form_file_meta.dart';
 
 /// A class representing a file form field containing raw byte data.
 ///
@@ -16,12 +18,12 @@ class BytesFormField extends FormFieldInterface {
   /// This list contains the byte data of the file that was submitted as part
   /// of a multipart form request.
   final List<int> bytes;
-  final Map<String, dynamic>? meta;
+  final BytesFormFileMeta meta;
 
   /// Creates an instance of [BytesFormField].
   ///
   /// - [key]: The key for the form field.
   /// - [bytes]: The byte data of the file field.
-  BytesFormField(this.key, this.bytes, {this.meta})
+  BytesFormField(this.key, this.bytes, {required this.meta})
     : super(key, bytes, meta: meta);
 }

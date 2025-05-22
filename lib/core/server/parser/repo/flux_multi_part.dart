@@ -9,6 +9,7 @@ import 'package:dart_flux/core/errors/server_error.dart';
 import 'package:dart_flux/core/server/parser/interface/multi_part_interface.dart';
 import 'package:dart_flux/core/server/parser/models/bytes_form_data.dart';
 import 'package:dart_flux/core/server/parser/models/bytes_form_field.dart';
+import 'package:dart_flux/core/server/parser/models/bytes_form_file_meta.dart';
 import 'package:dart_flux/core/server/parser/models/file_form_field.dart';
 import 'package:dart_flux/core/server/parser/models/form_data.dart';
 import 'package:dart_flux/core/server/parser/models/text_form_field.dart';
@@ -161,10 +162,12 @@ class FluxMultiPart implements MultiPartInterface {
           // Convert the file part to bytes and save it.
           var fileBytes = await _partToBytes(broadCast, contentType);
           String? fileName = _extractFileName(disposition);
-          Map<String, dynamic> meta = {};
-          meta['contentType'] = contentType;
-          meta['fileName'] = fileName;
-          meta['fileSize'] = fileBytes.length;
+
+          BytesFormFileMeta meta = BytesFormFileMeta(
+            contentType: contentType,
+            name: fileName,
+            size: fileBytes.length,
+          );
 
           BytesFormField result = BytesFormField(name, fileBytes, meta: meta);
           files.add(result);
