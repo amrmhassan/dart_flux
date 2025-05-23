@@ -48,4 +48,6 @@ abstract class ServerInterface {
   /// Custom handler executed when no matching route or handler is found.
   /// Can be used to return a 404 or fallback response.
   late ProcessorHandler? onNotFound;
+
+  late bool disableCors;
 }

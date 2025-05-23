@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dart_flux/core/errors/server_error.dart';
+import 'package:dart_flux/core/errors/types/not_found_error.dart';
 import 'package:dart_flux/core/server/routing/models/flux_request.dart';
 import 'package:mime/mime.dart';
 
@@ -11,7 +12,7 @@ class ResponseUtils {
   /// - If no range is provided, it sends the full file.
   Future<void> sendChunkedFile(FluxRequest req, File file) async {
     if (!file.existsSync()) {
-      file.createSync(recursive: true);
+      throw NotFoundError('file not found');
     }
 
     String fileName = file.path.split('/').last;

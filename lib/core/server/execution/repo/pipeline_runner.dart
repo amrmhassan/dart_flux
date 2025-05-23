@@ -150,9 +150,7 @@ class PipelineRunner {
         } else if (output is FluxResponse) {
           _response = output;
           if (!output.closed) {
-            fluxLogger?.rawLog('closing open response');
             _response = await output.close();
-            fluxLogger?.rawLog('closed open response');
           }
           isNotFound = false;
         }

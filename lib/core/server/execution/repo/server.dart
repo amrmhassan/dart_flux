@@ -5,6 +5,7 @@ import 'package:dart_flux/core/server/execution/interface/flux_logger_interface.
 import 'package:dart_flux/core/server/execution/interface/server_interface.dart';
 import 'package:dart_flux/core/server/execution/repo/flux_logger.dart';
 import 'package:dart_flux/core/server/execution/repo/pipeline_runner.dart';
+import 'package:dart_flux/core/server/middlewares/cors_middleware.dart';
 import 'package:dart_flux/core/server/routing/models/lower_middleware.dart';
 import 'package:dart_flux/core/server/utils/server_utils.dart';
 import 'package:dart_flux/core/server/middlewares/request_logger_middleware.dart';
@@ -70,6 +71,7 @@ class Server implements ServerInterface {
     this.loggerEnabled = true,
     this.logger,
     this.onNotFound,
+    this.disableCors = true,
   }) {
     // Ensure default values for middlewares if not provided.
     upperMiddlewares ??= [];
@@ -77,6 +79,14 @@ class Server implements ServerInterface {
 
     // Add logging middlewares if enabled.
     _addLoggerMiddlewares();
+    _disableCorsProtection();
+  }
+
+  void _disableCorsProtection() {
+    if (disableCors) {
+      // Add CORS middleware to the upper middlewares if CORS is disabled.
+      upperMiddlewares?.add(CorsMiddleware.middleware);
+    }
   }
 
   /// Private lists to manage system-level middlewares (upper and lower).
@@ -184,4 +194,7 @@ class Server implements ServerInterface {
     _server = null; // Set the server reference to null to indicate it’s closed.
     logger?.rawLog('server closed'); // Log the server shutdown message.
   }
+
+  @override
+  bool disableCors;
 }
