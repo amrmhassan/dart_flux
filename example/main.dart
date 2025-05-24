@@ -15,7 +15,7 @@ void main(List<String> args) async {
     res,
     pathArgs,
   ) async {
-    return res.success('Hello World');
+    return res.success('Hello World updated');
   });
   Server server = Server(
     InternetAddress.anyIPv4,
