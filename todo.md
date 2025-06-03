@@ -13,3 +13,16 @@ make a storage micro service for upload/downloading files, should be integrated 
 
 test cors protection
 test webhooks on different systems
+add hmac algorithm for protecting APIs to a specific secret
+
+
+
+
+---------
+add a dashboard with turn on and off from the app class
+and settable endpoint , dashboard runs on the same server or seperate server from the main app
+dashboard initianlly has users management/routes and endpoints brnches like a tree but with no editing to them
+
+
+----------
+auto db connection retry if closed or dropped
