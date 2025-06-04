@@ -56,18 +56,30 @@ void main() async {
 
 ## Documentation
 
-Comprehensive documentation is available in the [docs](docs/README.md) directory:
+📚 **Comprehensive documentation is available in the [doc](doc/README.md) directory**
 
-- [Getting Started](docs/getting-started.md)
-- [Server Setup](docs/server-setup.md)
-- [Routing](docs/routing.md)
-  - [Routing Examples](docs/routing_examples.md)
-- [Authentication](docs/authentication.md)
-- [Database Operations](docs/database.md)
-- [File Management](docs/file-management.md)
-- [Webhooks](docs/webhooks.md)
-- [Error Handling](docs/error-handling.md)
-- [API Reference](docs/api-reference.md)
+### 🚀 Quick Start
+- [Getting Started](doc/getting-started.md) - Installation and basic setup
+- [Server Setup](doc/server-setup.md) - Server configuration and deployment
+
+### 🏗️ Core Concepts
+- [Architecture Overview](doc/architecture-overview.md) - Framework architecture and pipeline system
+- [Routing](doc/routing.md) - URL routing and middleware
+  - [Routing Examples](doc/routing_examples.md) - Real-world routing patterns
+- [Authentication](doc/authentication.md) - JWT authentication and security
+- [Database Operations](doc/database.md) - MongoDB integration
+- [File Management](doc/file-management.md) - File upload/download handling
+- [Webhooks](doc/webhooks.md) - GitHub integration and automation
+
+### 🔧 Advanced Topics
+- [Advanced Usage Patterns](doc/advanced-usage-patterns.md) - Complex implementation patterns
+- [Best Practices and Security](doc/best-practices-security.md) - Production guidelines
+- [Integration Guides](doc/integration-guides.md) - Third-party service integrations
+
+### 📖 Reference
+- [API Reference](doc/api-reference.md) - Complete API documentation
+- [Error Handling](doc/error-handling.md) - Error management strategies
+- [Troubleshooting Guide](doc/troubleshooting-guide.md) - Common issues and solutions
 
 ## License
 

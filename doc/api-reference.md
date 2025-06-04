@@ -2,6 +2,13 @@
 
 This document provides a comprehensive reference of the Dart Flux API, including classes, methods, and properties.
 
+> 📖 **Navigation:**
+> - [Getting Started](getting-started.md) - Basic usage examples
+> - [Architecture Overview](architecture-overview.md) - System design context
+> - [Routing Examples](routing_examples.md) - Practical API usage
+> - [Advanced Patterns](advanced-usage-patterns.md) - Complex API implementations
+> - [Troubleshooting](troubleshooting-guide.md) - API-related issues
+
 ## Table of Contents
 
 - [Server](#server)
@@ -11,8 +18,11 @@ This document provides a comprehensive reference of the Dart Flux API, including
 - [Database](#database)
 - [Webhook](#webhook)
 - [File Management](#file-management)
+- [Pipeline and Middleware](#pipeline-and-middleware)
 - [Error Handling](#error-handling)
 - [Utilities](#utilities)
+- [Type Definitions](#type-definitions)
+- [Constants and Enums](#constants-and-enums)
 
 ## Server
 
@@ -399,6 +409,107 @@ Represents multipart form data.
 | `text(String name)` | Gets a text field by name |
 | `texts(String name)` | Gets multiple text fields by name |
 
+## Pipeline and Middleware
+
+### PipelineRunner Class
+
+Orchestrates the execution of middleware pipelines.
+
+```dart
+class PipelineRunner {
+  static Future<void> runPipelines(
+    FluxRequest request,
+    FluxResponse response,
+    List<Middleware> upperPipeline,
+    List<RequestProcessor> mainPipeline,
+    List<LowerMiddleware> lowerPipeline,
+  );
+}
+```
+
+**Pipeline Execution Order:**
+1. System Upper Middlewares
+2. Server Upper Middlewares
+3. Router Upper Middlewares
+4. Main Pipeline (Route Handlers)
+5. Router Lower Middlewares
+6. Server Lower Middlewares
+7. System Lower Middlewares
+
+### Middleware Types
+
+#### Processor
+```dart
+typedef Processor = FutureOr<void> Function(
+  FluxRequest request,
+  FluxResponse response,
+  Map<String, String> pathArgs,
+);
+```
+
+Can return early to stop the pipeline execution.
+
+#### LowerProcessor
+```dart
+typedef LowerProcessor = FutureOr<void> Function(
+  FluxRequest request,
+  FluxResponse response,
+  Map<String, String> pathArgs,
+);
+```
+
+Post-processing middleware that cannot stop pipeline execution.
+
+#### RequestProcessor
+```dart
+abstract class RequestProcessor {
+  FutureOr<void> call(
+    FluxRequest request,
+    FluxResponse response,
+    Map<String, String> pathArgs,
+  );
+}
+```
+
+Main request processing interface used in the main pipeline.
+
+### Built-in Middlewares
+
+#### CorsMiddleware
+```dart
+class CorsMiddleware implements Middleware {
+  CorsMiddleware({
+    List<String> allowedOrigins = const ['*'],
+    List<String> allowedMethods = const ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    List<String> allowedHeaders = const ['Content-Type', 'Authorization'],
+    bool allowCredentials = false,
+    int maxAge = 86400,
+  });
+}
+```
+
+#### AuthMiddleware
+```dart
+class AuthMiddleware implements Middleware {
+  AuthMiddleware({
+    required FluxAuthenticator authenticator,
+    List<String> excludePaths = const [],
+    bool requireAuth = true,
+  });
+}
+```
+
+#### RateLimitMiddleware
+```dart
+class RateLimitMiddleware implements Middleware {
+  RateLimitMiddleware({
+    required int maxRequests,
+    required Duration window,
+    String keyGenerator(FluxRequest request)?,
+  });
+}
+```
+
 ## Error Handling
 
 ### ServerError Class
@@ -413,6 +524,67 @@ class ServerError extends Error {
   
   @override
   String toString() => message;
+}
+```
+
+### FluxException Class
+
+Base exception class for Flux-specific errors.
+
+```dart
+class FluxException implements Exception {
+  final String message;
+  final int statusCode;
+  final Map<String, dynamic>? details;
+  
+  FluxException(this.message, {this.statusCode = 500, this.details});
+  
+  @override
+  String toString() => 'FluxException: $message';
+}
+```
+
+### ValidationException Class
+
+Exception for validation errors.
+
+```dart
+class ValidationException extends FluxException {
+  ValidationException(String message, {Map<String, dynamic>? details})
+      : super(message, statusCode: 400, details: details);
+}
+```
+
+### AuthenticationException Class
+
+Exception for authentication errors.
+
+```dart
+class AuthenticationException extends FluxException {
+  AuthenticationException(String message)
+      : super(message, statusCode: 401);
+}
+```
+
+### AuthorizationException Class
+
+Exception for authorization errors.
+
+```dart
+class AuthorizationException extends FluxException {
+  AuthorizationException(String message)
+      : super(message, statusCode: 403);
+}
+```
+
+### DatabaseException Class
+
+Exception for database-related errors.
+
+```dart
+class DatabaseException extends FluxException {
+  DatabaseException(String message, {Map<String, dynamic>? details})
+      : super(message, statusCode: 500, details: details);
 }
 ```
 
@@ -443,3 +615,208 @@ Utility functions for path manipulation.
 | `join(String path1, String path2)` | Joins two path segments |
 | `isPathMatch(String pattern, String path)` | Checks if a path matches a pattern |
 | `extractPathParams(String pattern, String path)` | Extracts parameters from a path |
+
+## Type Definitions
+
+### Handler Types
+
+```dart
+// Basic processor handler
+typedef ProcessorHandler = FutureOr<void> Function(
+  FluxRequest request,
+  FluxResponse response,
+  Map<String, String> pathArgs,
+);
+
+// Middleware handler with next function
+typedef Middleware = FutureOr<void> Function(
+  FluxRequest request,
+  FluxResponse response,
+  FutureOr<void> Function() next,
+);
+
+// Lower middleware (post-processing)
+typedef LowerMiddleware = FutureOr<void> Function(
+  FluxRequest request,
+  FluxResponse response,
+);
+```
+
+### Entity Types
+
+```dart
+// User interface for authentication
+abstract class UserInterface {
+  String get id;
+  String get email;
+  Map<String, dynamic> toJson();
+}
+
+// User authentication data
+abstract class UserAuthInterface {
+  String get id;
+  String get passwordHash;
+  Map<String, dynamic> toJson();
+}
+
+// JWT payload model
+class JwtPayloadModel {
+  final String userId;
+  final int exp;
+  final int iat;
+  final Map<String, dynamic> extra;
+  
+  JwtPayloadModel({
+    required this.userId,
+    required this.exp,
+    required this.iat,
+    this.extra = const {},
+  });
+}
+```
+
+### Repository Interfaces
+
+```dart
+// Base repository interface
+abstract class ModelRepositoryInterface<T> {
+  Future<T?> findById(String id);
+  Future<List<T>> findAll();
+  Future<T> create(Map<String, dynamic> data);
+  Future<T?> update(String id, Map<String, dynamic> data);
+  Future<bool> delete(String id);
+}
+
+// User repository interface
+abstract class UserRepositoryInterface extends ModelRepositoryInterface<UserInterface> {
+  Future<UserInterface?> findByEmail(String email);
+  Future<UserAuthInterface?> getAuth(String userId);
+  Future<void> updateAuth(String userId, Map<String, dynamic> authData);
+}
+```
+
+## Constants and Enums
+
+### HTTP Methods
+
+```dart
+class HttpMethods {
+  static const String GET = 'GET';
+  static const String POST = 'POST';
+  static const String PUT = 'PUT';
+  static const String DELETE = 'DELETE';
+  static const String PATCH = 'PATCH';
+  static const String OPTIONS = 'OPTIONS';
+  static const String HEAD = 'HEAD';
+}
+```
+
+### Content Types
+
+```dart
+class ContentTypes {
+  static const String json = 'application/json';
+  static const String html = 'text/html';
+  static const String text = 'text/plain';
+  static const String xml = 'application/xml';
+  static const String formData = 'multipart/form-data';
+  static const String formUrlEncoded = 'application/x-www-form-urlencoded';
+  static const String octetStream = 'application/octet-stream';
+}
+```
+
+### Status Codes
+
+```dart
+class StatusCodes {
+  // Success
+  static const int ok = 200;
+  static const int created = 201;
+  static const int accepted = 202;
+  static const int noContent = 204;
+  
+  // Redirection
+  static const int movedPermanently = 301;
+  static const int found = 302;
+  static const int notModified = 304;
+  
+  // Client Error
+  static const int badRequest = 400;
+  static const int unauthorized = 401;
+  static const int forbidden = 403;
+  static const int notFound = 404;
+  static const int methodNotAllowed = 405;
+  static const int conflict = 409;
+  static const int unprocessableEntity = 422;
+  static const int tooManyRequests = 429;
+  
+  // Server Error
+  static const int internalServerError = 500;
+  static const int notImplemented = 501;
+  static const int badGateway = 502;
+  static const int serviceUnavailable = 503;
+  static const int gatewayTimeout = 504;
+}
+```
+
+### Predefined Commands
+
+```dart
+class PredefinedCommands {
+  static const List<String> dartProjectUpdate = [
+    'dart pub get',
+    'dart pub upgrade',
+    'dart compile exe bin/main.dart -o server',
+  ];
+  
+  static const List<String> flutterProjectUpdate = [
+    'flutter pub get',
+    'flutter pub upgrade',
+    'flutter build web',
+  ];
+  
+  static const List<String> dockerBuild = [
+    'docker build -t app .',
+    'docker run -d -p 8080:8080 app',
+  ];
+}
+```
+
+### Cache Constants
+
+```dart
+class CacheConstants {
+  static const Duration defaultAccessTokenCache = Duration(minutes: 15);
+  static const Duration defaultRefreshTokenCache = Duration(hours: 24);
+  static const Duration defaultUserCache = Duration(minutes: 30);
+  static const Duration defaultClearCacheInterval = Duration(hours: 1);
+}
+```
+
+---
+
+## 📚 Documentation Navigation
+
+### Implementation Guides
+- **[← Getting Started](getting-started.md)** - See APIs in basic usage
+- **[Routing Examples →](routing_examples.md)** - API usage in practice
+- **[Authentication →](authentication.md)** - Authentication API usage
+- **[Database Operations →](database.md)** - Database API patterns
+
+### Advanced Usage
+- **[Architecture Overview](architecture-overview.md)** - API design context
+- **[Advanced Patterns](advanced-usage-patterns.md)** - Complex API implementations
+- **[Best Practices](best-practices-security.md)** - API security guidelines
+
+### Specific Features
+- **[File Management](file-management.md)** - File API usage
+- **[Webhooks](webhooks.md)** - Webhook API implementation
+- **[Error Handling](error-handling.md)** - Error API patterns
+
+### Support
+- **[Troubleshooting](troubleshooting-guide.md)** - API-related issues
+- **[Integration Guides](integration-guides.md)** - API integration patterns
+
+---
+
+📖 **[Back to Documentation Index](README.md)**

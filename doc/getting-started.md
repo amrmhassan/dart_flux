@@ -128,14 +128,33 @@ The framework provides `FluxRequest` and `FluxResponse` classes to handle HTTP r
 }
 ```
 
-## Next Steps
+## 🚀 Next Steps
 
-Once you're familiar with the basics, explore these topics:
+Now that you have your first Dart Flux application running, explore these topics:
 
-- [Server Setup](server-setup.md): Configure your server with middlewares
-- [Routing](routing.md): Advanced routing techniques
-- [Authentication](authentication.md): Implement user authentication
-- [Database Operations](database.md): Connect to and use databases
+### Core Concepts
+- **[Architecture Overview](architecture-overview.md)** - Learn about the pipeline system and framework architecture
+- **[Routing](routing.md)** - Master URL routing and middleware patterns
+- **[Routing Examples](routing_examples.md)** - See real-world routing implementations
+
+### Essential Features
+- **[Authentication](authentication.md)** - Add JWT authentication to secure your API
+- **[Database Operations](database.md)** - Connect to MongoDB and manage data
+- **[File Management](file-management.md)** - Handle file uploads and downloads
+- **[Error Handling](error-handling.md)** - Implement robust error management
+
+### Production Ready
+- **[Server Setup](server-setup.md)** - Configure servers for production deployment
+- **[Best Practices and Security](best-practices-security.md)** - Security guidelines and performance optimization
+- **[Troubleshooting Guide](troubleshooting-guide.md)** - Common issues and solutions
+
+### Advanced Topics
+- **[Advanced Usage Patterns](advanced-usage-patterns.md)** - Complex middleware and integration patterns
+- **[Integration Guides](integration-guides.md)** - Connect with third-party services
+
+---
+
+📖 **[← Back to Documentation Index](README.md)** | **[Continue to Routing →](routing.md)**
 
 ## Troubleshooting
 

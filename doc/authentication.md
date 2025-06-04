@@ -2,6 +2,13 @@
 
 This guide explains how to implement authentication in your Dart Flux application.
 
+> 📖 **Related Documentation:**
+> - [Getting Started](getting-started.md) - Basic application setup
+> - [Routing Examples](routing_examples.md) - Authentication examples in action
+> - [Best Practices & Security](best-practices-security.md) - Security guidelines
+> - [Advanced Patterns](advanced-usage-patterns.md) - Custom authentication flows
+> - [API Reference](api-reference.md) - Authentication API details
+
 ## Overview
 
 Dart Flux provides a flexible authentication system with support for:
@@ -409,3 +416,26 @@ Router.path('auth')
 6. **Token Revocation**: Implement a token blacklist for logout and security incidents.
 
 7. **CORS**: Configure proper CORS headers to prevent unauthorized cross-origin requests.
+
+---
+
+## 📚 Documentation Navigation
+
+### Related Topics
+- **[← Routing Examples](routing_examples.md)** - See authentication in action
+- **[Best Practices & Security →](best-practices-security.md)** - Security guidelines
+- **[Advanced Patterns →](advanced-usage-patterns.md)** - Custom authentication flows
+- **[Database Operations](database.md)** - Store user data securely
+
+### Implementation Examples
+- **[Routing Examples](routing_examples.md#authentication--authorization)** - Complete auth examples
+- **[Integration Guides](integration-guides.md)** - OAuth2, SAML, and external providers
+- **[File Management](file-management.md)** - Secure file access control
+
+### Reference
+- **[API Reference](api-reference.md)** - Authentication API details
+- **[Troubleshooting](troubleshooting-guide.md#authentication-issues)** - Common auth problems
+
+---
+
+📖 **[Back to Documentation Index](README.md)**

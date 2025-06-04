@@ -15,3 +15,7 @@
 ## 0.0.4
 
 * basic auth service
+
+## 0.0.5
+
+* Docs added
